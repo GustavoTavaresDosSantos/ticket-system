@@ -2,31 +2,45 @@ import React from "react";
 import { View, TextInput, Button, Text } from "react-native";
 import { Formik } from "formik";
 import * as Yup from "yup";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 
 const loginSchema = Yup.object().shape({
   id: Yup.string()
-    .length(8, "A matrícula deve ter exatamente 8 caracteres.")
+    .length(8, "A matrícula deve ter exatamente 8 dígitos")
     .matches(/^\d+$/, "A matrícula deve conter apenas números")
-    .required("A matrícula é obrigatória."),
-
-  password: Yup.string()
-    .required("Senha é obrigatória")
-    .min(6, "Senha muito curta")
-    .max(30, "Senha muito grande")
-    .matches(
-      /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])/,
-      "A senha deve conter ao menos uma letra maiúscula, uma letra minúscula, um número e um caractere especial."
-    ),
+    .required("Matrícula obrigatória"),
+  password: Yup.string().required("Senha obrigatória"),
 });
 
-export default function LoginScreen({ onLogin }) {
+export default function StudentLoginScreen({ navigation }) {
+  const handleLogin = async (values) => {
+    try {
+      const storedUsers = await AsyncStorage.getItem("users");
+      const users = storedUsers ? JSON.parse(storedUsers) : [];
+
+      const student = users.find(
+        (u) =>
+          u.id === values.id &&
+          u.password === values.password &&
+          u.role === "student"
+      );
+
+      if (student) {
+        alert("Login bem-sucedido!");
+        navigation.navigate("StudentHome");
+      } else {
+        alert("Matrícula ou senha incorretas.");
+      }
+    } catch (error) {
+      console.log("Erro ao fazer login:", error);
+    }
+  };
+
   return (
     <Formik
       initialValues={{ id: "", password: "" }}
       validationSchema={loginSchema}
-      onSubmit={(values) => {
-        onLogin(values);
-      }}
+      onSubmit={handleLogin}
     >
       {({
         handleChange,
@@ -57,7 +71,7 @@ export default function LoginScreen({ onLogin }) {
             <Text>{errors.password}</Text>
           )}
 
-          <Button title="Login" onPress={handleSubmit} />
+          <Button title="Login Aluno" onPress={handleSubmit} />
         </View>
       )}
     </Formik>
