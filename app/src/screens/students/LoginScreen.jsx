@@ -12,7 +12,7 @@ const loginSchema = Yup.object().shape({
   password: Yup.string().required("Senha obrigatória"),
 });
 
-export default function StudentLoginScreen({ navigation }) {
+export default function LoginScreen({ navigation }) {
   const handleLogin = async (values) => {
     try {
       const storedUsers = await AsyncStorage.getItem("users");
@@ -27,7 +27,7 @@ export default function StudentLoginScreen({ navigation }) {
 
       if (student) {
         alert("Login bem-sucedido!");
-        navigation.navigate("StudentHome");
+        navigation.navigate("TicketScreen");
       } else {
         alert("Matrícula ou senha incorretas.");
       }

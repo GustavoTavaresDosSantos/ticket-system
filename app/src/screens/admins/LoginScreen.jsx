@@ -5,14 +5,11 @@ import * as Yup from "yup";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 
 const loginSchema = Yup.object().shape({
-  id: Yup.string()
-    .length(8, "A matrícula deve ter exatamente 8 dígitos")
-    .matches(/^\d+$/, "A matrícula deve conter apenas números")
-    .required("Matrícula obrigatória"),
+  username: Yup.string().required("Usuário obrigatório"),
   password: Yup.string().required("Senha obrigatória"),
 });
 
-export default function AdminLoginScreen({ navigation }) {
+export default function LoginScreen({ navigation }) {
   const handleLogin = async (values) => {
     try {
       const storedUsers = await AsyncStorage.getItem("users");
@@ -20,16 +17,16 @@ export default function AdminLoginScreen({ navigation }) {
 
       const admin = users.find(
         (u) =>
-          u.id === values.id &&
+          u.username === values.username &&
           u.password === values.password &&
           u.role === "admin"
       );
 
       if (admin) {
         alert("Login bem-sucedido!");
-        navigation.navigate("AdminHome");
+        navigation.navigate("RegisterScreen");
       } else {
-        alert("Matrícula ou senha incorretas.");
+        alert("Usuário ou senha incorretos.");
       }
     } catch (error) {
       console.log("Erro ao fazer login:", error);
@@ -38,7 +35,7 @@ export default function AdminLoginScreen({ navigation }) {
 
   return (
     <Formik
-      initialValues={{ id: "", password: "" }}
+      initialValues={{ username: "", password: "" }}
       validationSchema={loginSchema}
       onSubmit={handleLogin}
     >
@@ -52,13 +49,14 @@ export default function AdminLoginScreen({ navigation }) {
       }) => (
         <View>
           <TextInput
-            placeholder="Matrícula"
-            keyboardType="numeric"
-            onChangeText={handleChange("id")}
-            onBlur={handleBlur("id")}
-            value={values.id}
+            placeholder="Usuário"
+            onChangeText={handleChange("username")}
+            onBlur={handleBlur("username")}
+            value={values.username}
           />
-          {touched.id && errors.id && <Text>{errors.id}</Text>}
+          {touched.username && errors.username && (
+            <Text>{errors.username}</Text>
+          )}
 
           <TextInput
             placeholder="Senha"

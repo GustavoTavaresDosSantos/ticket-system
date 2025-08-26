@@ -1,7 +1,7 @@
 import React from "react";
 import { View, Button } from "react-native";
 
-const ChooseRoleScreen = ({ navigation }) => {
+export default function ChooseRoleScreen({ navigation }) {
   return (
     <View>
       <Button
@@ -14,6 +14,4 @@ const ChooseRoleScreen = ({ navigation }) => {
       />
     </View>
   );
-};
-
-export default ChooseRoleScreen;
+}
