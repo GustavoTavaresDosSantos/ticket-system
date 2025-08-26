@@ -6,6 +6,7 @@ import * as Yup from "yup";
 const loginSchema = Yup.object().shape({
   id: Yup.string()
     .length(8, "A matrícula deve ter exatamente 8 caracteres.")
+    .matches(/^\d+$/, "A matrícula deve conter apenas números")
     .required("A matrícula é obrigatória."),
 
   password: Yup.string()
