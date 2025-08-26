@@ -1,77 +1,57 @@
-import React from "react";
-import { View, TextInput, Button, Text } from "react-native";
-import { Formik } from "formik";
-import * as Yup from "yup";
-import AsyncStorage from "@react-native-async-storage/async-storage";
+import React, { useState } from "react";
+import { View, StyleSheet } from "react-native";
+import CustomInput from "../../components/CustomInput";
+import CustomButton from "../../components/CustomButton";
+import CustomText from "../../components/CustomText";
+import { useSelector } from "react-redux";
 
-const loginSchema = Yup.object().shape({
-  username: Yup.string().required("Usuário obrigatório"),
-  password: Yup.string().required("Senha obrigatória"),
-});
+export default function AdminLoginScreen({ navigation }) {
+  const theme = useSelector((state) => state.theme.theme);
+  const isDark = theme === "dark";
 
-export default function LoginScreen({ navigation }) {
-  const handleLogin = async (values) => {
-    try {
-      const storedUsers = await AsyncStorage.getItem("users");
-      const users = storedUsers ? JSON.parse(storedUsers) : [];
+  const [user, setUser] = useState("");
+  const [password, setPassword] = useState("");
 
-      const admin = users.find(
-        (u) =>
-          u.username === values.username &&
-          u.password === values.password &&
-          u.role === "admin"
-      );
-
-      if (admin) {
-        alert("Login bem-sucedido!");
-        navigation.navigate("RegisterScreen");
-      } else {
-        alert("Usuário ou senha incorretos.");
-      }
-    } catch (error) {
-      console.log("Erro ao fazer login:", error);
-    }
+  const handleLogin = () => {
+    console.log(`Admin logando: ${user}`);
   };
 
   return (
-    <Formik
-      initialValues={{ username: "", password: "" }}
-      validationSchema={loginSchema}
-      onSubmit={handleLogin}
+    <View
+      style={[
+        styles.container,
+        { backgroundColor: isDark ? "#121212" : "#f9f9f9" },
+      ]}
     >
-      {({
-        handleChange,
-        handleBlur,
-        handleSubmit,
-        values,
-        errors,
-        touched,
-      }) => (
-        <View>
-          <TextInput
-            placeholder="Usuário"
-            onChangeText={handleChange("username")}
-            onBlur={handleBlur("username")}
-            value={values.username}
-          />
-          {touched.username && errors.username && (
-            <Text>{errors.username}</Text>
-          )}
+      <CustomText style={styles.title}>Login Admin</CustomText>
 
-          <TextInput
-            placeholder="Senha"
-            secureTextEntry
-            onChangeText={handleChange("password")}
-            onBlur={handleBlur("password")}
-            value={values.password}
-          />
-          {touched.password && errors.password && (
-            <Text>{errors.password}</Text>
-          )}
+      <CustomInput placeholder="Usuário" value={user} onChangeText={setUser} />
+      <CustomInput
+        placeholder="Senha"
+        secureTextEntry
+        value={password}
+        onChangeText={setPassword}
+      />
 
-          <Button title="Login Admin" onPress={handleSubmit} />
-        </View>
-      )}
-    </Formik>
+      <CustomButton title="Entrar" onPress={handleLogin} />
+      <CustomButton
+        title="Cadastrar"
+        onPress={() => navigation.navigate("RegisterScreen")}
+      />
+    </View>
   );
 }
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    justifyContent: "center",
+    padding: 20,
+  },
+  title: {
+    fontSize: 24,
+    fontWeight: "bold",
+    marginBottom: 20,
+    textAlign: "center",
+  },
+});
