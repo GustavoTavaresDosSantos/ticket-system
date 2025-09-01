@@ -30,6 +30,20 @@ export const createMockUsers = async () => {
       role: "admin",
       name: "Administrador",
     },
+    {
+      id: "testuser",
+      password: "test",
+      role: "student",
+      name: "Test User",
+      class: "TEST",
+    },
+    {
+      id: "99999999",
+      password: "999999",
+      role: "student",
+      name: "Aluno Teste",
+      class: "MA-V1",
+    },
   ];
 
   try {
@@ -51,4 +65,3 @@ export const checkAndCreateMockUsers = async () => {
     console.error("Erro ao verificar usuários:", error);
   }
 };
-

@@ -83,38 +83,43 @@ Contribuições são bem-vindas! Sinta-se à vontade para abrir issues e pull re
 
 Este projeto está licenciado sob a licença MIT. Veja o arquivo `LICENSE` para mais detalhes. (Nota: O arquivo LICENSE não está presente no repositório original, mas é uma boa prática incluí-lo.)
 
-
-
-
 ## Instruções de Teste
-
-
-
 
 ## Usuários de Teste Criados
 
 O sistema foi configurado com os seguintes usuários de teste:
 
 ### Alunos:
+
 1. **João Silva (DS-V1)**
+
    - Matrícula: `12345678`
    - Senha: `123456`
    - Turma: Desenvolvimento de Sistemas/V1
    - Recreio: 15:00 às 15:15
 
 2. **Maria Santos (DS-V2)**
+
    - Matrícula: `87654321`
    - Senha: `123456`
    - Turma: Desenvolvimento de Sistemas/V2
    - Recreio: 15:30 às 15:45
 
 3. **Pedro Oliveira (MA-V1)**
+
    - Matrícula: `11111111`
    - Senha: `123456`
    - Turma: Mecânica Automotiva/V1
    - Recreio: 16:00 às 16:15
 
+4. **Aluno de Teste (Teste)**
+   - Matrícula: `99999999`
+   - Senha: `999999`
+   - Turma: Turma de Teste
+   - Recreio: 00:00 às 23:59
+
 ### Administrador:
+
 - **Administrador**
   - Login: `admin123`
   - Senha: `admin123`
@@ -122,6 +127,7 @@ O sistema foi configurado com os seguintes usuários de teste:
 ## Como Testar
 
 ### 1. Executar o Projeto
+
 ```bash
 cd app
 npm start
@@ -131,7 +137,7 @@ npm start
 
 1. **Tela Inicial**: Escolha "Aluno"
 2. **Login**: Use uma das matrículas e senhas acima
-3. **HomeScreen**: 
+3. **HomeScreen**:
    - Visualize o horário do recreio da turma
    - Observe o contador de tempo até o recreio
    - O botão "Acessar Recreio" só fica habilitado 5 minutos antes do recreio
@@ -156,6 +162,7 @@ npm start
 ### 4. Funcionalidades das Telas
 
 #### HomeScreen
+
 - Exibe horário do recreio da turma
 - Contador em tempo real até o recreio
 - Botão habilitado apenas no horário correto
@@ -163,6 +170,7 @@ npm start
 - Botão de mudança de tema no header
 
 #### ReceiveScreen
+
 - Mapa com localização do usuário
 - Marcador da escola no mapa
 - Status da localização (correto/incorreto)
@@ -170,6 +178,7 @@ npm start
 - Botão habilitado apenas quando no local correto
 
 #### ValidateScreen
+
 - Ticket visual com design atrativo
 - Informações do aluno e turma
 - Número único do ticket
@@ -192,4 +201,3 @@ npm start
 - `@react-navigation/native`: Para navegação
 - `@reduxjs/toolkit`: Para gerenciamento de estado
 - `formik` e `yup`: Para validação de formulários
-

@@ -88,16 +88,8 @@ export default function ValidateScreen({ navigation, route }) {
           style={[styles.tornTicketContainer, { opacity: fadeAnim }]}
         >
           <View style={[styles.tornTicket, { backgroundColor: colors.danger }]}>
-            <CustomText
-              style={[styles.tornText, { color: colors.cardBackground }]}
-            >
-              🎫 TICKET RASGADO
-            </CustomText>
-            <CustomText
-              style={[styles.tornSubtext, { color: colors.cardBackground }]}
-            >
-              Lanche liberado!
-            </CustomText>
+            <CustomText style={[styles.tornText, { color: colors.cardBackground }]}>🎫 TICKET RASGADO</CustomText>
+            <CustomText style={[styles.tornSubtext, { color: colors.cardBackground }]}>Lanche liberado!</CustomText>
           </View>
         </Animated.View>
       </View>
@@ -182,11 +174,7 @@ export default function ValidateScreen({ navigation, route }) {
         </View>
 
         <View style={styles.instructionContainer}>
-          <CustomText
-            style={[styles.instructionText, { color: colors.secondary }]}
-          >
-            Aguarde o atendente rasgar este ticket para liberar seu lanche
-          </CustomText>
+          <CustomText style={[styles.instructionText, { color: colors.secondary }]}>Aguarde o atendente rasgar este ticket para liberar seu lanche</CustomText>
         </View>
 
         <View style={styles.buttonContainer}>
