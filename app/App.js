@@ -10,7 +10,7 @@ import { Feather } from "@expo/vector-icons";
 import ChooseRoleScreen from "./src/screens/ChooseRoleScreen";
 import StudentLoginScreen from "./src/screens/students/LoginScreen";
 import AdminLoginScreen from "./src/screens/admins/LoginScreen";
-import RegisterScreen from "./src/screens/admins/RegisterScreen";
+
 
 const Stack = createNativeStackNavigator();
 
@@ -63,11 +63,7 @@ function AppNavigator() {
           component={AdminLoginScreen}
           options={{ title: "Login Admin" }}
         />
-        <Stack.Screen
-          name="RegisterScreen"
-          component={RegisterScreen}
-          options={{ title: "Cadastro" }}
-        />
+
       </Stack.Navigator>
     </NavigationContainer>
   );
