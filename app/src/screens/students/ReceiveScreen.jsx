@@ -13,21 +13,23 @@ import CustomButton from "../../components/CustomButton";
 
 const { width, height } = Dimensions.get("window");
 
-export default function ReceiveScreen({ navigation }) {
+export default function ReceiveScreen({ navigation, route }) {
   const themeState = useSelector((state) => state.theme);
   const currentTheme = themeState.theme;
   const colors = themeState.colors[currentTheme];
 
-  const [currentTime, setCurrentTime] = useState(new Date());
+  const { student } = route.params; // Recebe os dados do aluno
+
+  const [currentTime, setCurrentTime] = useState(getLocalTimeInGMT3());
   const [location, setLocation] = useState(null);
   const [isInCorrectLocation, setIsInCorrectLocation] = useState(false);
 
   // Coordenadas da escola (exemplo - você deve ajustar para a localização real)
   const schoolLocation = {
-    latitude: -23.5505,
-    longitude: -46.6333,
-    latitudeDelta: 0.01,
-    longitudeDelta: 0.01,
+    latitude: -27.6183087,
+    longitude: -48.6628648,
+    latitudeDelta: 0.005,
+    longitudeDelta: 0.005,
   };
 
   // Dados das turmas e horários de recreio
@@ -37,12 +39,19 @@ export default function ReceiveScreen({ navigation }) {
     "MA-V1": { name: "Mecânica Automotiva/V1", breakStart: "16:00", breakEnd: "16:15" }
   };
 
-  const studentClass = "DS-V1";
-  const classInfo = classes[studentClass];
+  const classInfo = classes[student.class]; // Usa a turma do aluno logado
+
+  const getLocalTimeInGMT3 = () => {
+    const now = new Date();
+    const offset = now.getTimezoneOffset() * 60 * 1000; // offset em milissegundos
+    const gmt3Offset = -3 * 60 * 60 * 1000; // GMT-3 em milissegundos
+    const gmt3Time = new Date(now.getTime() + offset + gmt3Offset);
+    return gmt3Time;
+  };
 
   useEffect(() => {
     const timer = setInterval(() => {
-      setCurrentTime(new Date());
+      setCurrentTime(getLocalTimeInGMT3());
     }, 1000);
 
     getLocationPermission();
@@ -99,7 +108,7 @@ export default function ReceiveScreen({ navigation }) {
   };
 
   const getTimeUntilBreakEnd = () => {
-    const [breakHour, breakMinute] = classInfo.breakEnd.split(':').map(Number);
+    const [breakHour, breakMinute] = classInfo.breakEnd.split(":").map(Number);
     const breakEndTime = new Date(currentTime);
     breakEndTime.setHours(breakHour, breakMinute, 0, 0);
 
@@ -128,7 +137,7 @@ export default function ReceiveScreen({ navigation }) {
       return;
     }
 
-    navigation.navigate("ValidateScreen");
+    navigation.navigate("ValidateScreen", { student: student });
   };
 
   const renderTimeRemaining = () => {
@@ -259,4 +268,5 @@ const styles = StyleSheet.create({
     fontSize: 16,
   },
 });
+
 

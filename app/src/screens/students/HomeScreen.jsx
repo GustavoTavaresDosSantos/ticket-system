@@ -1,10 +1,5 @@
 import React, { useState, useEffect } from "react";
-import {
-  View,
-  StyleSheet,
-  Alert,
-  TouchableOpacity,
-} from "react-native";
+import { View, StyleSheet, Alert, TouchableOpacity } from "react-native";
 import { useSelector } from "react-redux";
 import CustomText from "../../components/CustomText";
 import CustomButton from "../../components/CustomButton";
@@ -14,23 +9,43 @@ export default function HomeScreen({ navigation, route }) {
   const currentTheme = themeState.theme;
   const colors = themeState.colors[currentTheme];
 
-  const [currentTime, setCurrentTime] = useState(new Date());
+  const { student } = route.params; // Recebe os dados do aluno
+
+  const getLocalTimeInGMT3 = () => {
+    const now = new Date();
+    const offset = now.getTimezoneOffset() * 60 * 1000; // offset em milissegundos
+    const gmt3Offset = -3 * 60 * 60 * 1000; // GMT-3 em milissegundos
+    const gmt3Time = new Date(now.getTime() + offset + gmt3Offset);
+    return gmt3Time;
+  };
+
+  const [currentTime, setCurrentTime] = useState(getLocalTimeInGMT3());
   const [ticketRedeemed, setTicketRedeemed] = useState(false);
 
   // Dados das turmas e horários de recreio
   const classes = {
-    "DS-V1": { name: "Desenvolvimento de Sistemas/V1", breakStart: "15:00", breakEnd: "15:15" },
-    "DS-V2": { name: "Desenvolvimento de Sistemas/V2", breakStart: "15:30", breakEnd: "15:45" },
-    "MA-V1": { name: "Mecânica Automotiva/V1", breakStart: "16:00", breakEnd: "16:15" }
+    "DS-V1": {
+      name: "Desenvolvimento de Sistemas/V1",
+      breakStart: "15:00",
+      breakEnd: "15:15",
+    },
+    "DS-V2": {
+      name: "Desenvolvimento de Sistemas/V2",
+      breakStart: "15:30",
+      breakEnd: "15:45",
+    },
+    "MA-V1": {
+      name: "Mecânica Automotiva/V1",
+      breakStart: "16:00",
+      breakEnd: "16:15",
+    },
   };
 
-  // Para teste, vamos usar DS-V1 como padrão
-  const studentClass = "DS-V1";
-  const classInfo = classes[studentClass];
+  const classInfo = classes[student.class]; // Usa a turma do aluno logado
 
   useEffect(() => {
     const timer = setInterval(() => {
-      setCurrentTime(new Date());
+      setCurrentTime(getLocalTimeInGMT3());
     }, 1000);
 
     // Verificar se o ticket já foi resgatado hoje
@@ -61,21 +76,23 @@ export default function HomeScreen({ navigation, route }) {
     const hours = currentTime.getHours();
     const minutes = currentTime.getMinutes();
     const currentMinutes = hours * 60 + minutes;
-    
+
     // Aulas das 13:45 às 17:15
     const startTime = 13 * 60 + 45; // 13:45
-    const endTime = 17 * 60 + 15;   // 17:15
-    
+    const endTime = 17 * 60 + 15; // 17:15
+
     return currentMinutes >= startTime && currentMinutes <= endTime;
   };
 
   const getTimeUntilBreak = () => {
-    const [breakHour, breakMinute] = classInfo.breakStart.split(':').map(Number);
+    const [breakHour, breakMinute] = classInfo.breakStart
+      .split(":")
+      .map(Number);
     const breakTime = new Date(currentTime);
     breakTime.setHours(breakHour, breakMinute, 0, 0);
 
     const timeDiff = breakTime.getTime() - currentTime.getTime();
-    
+
     if (timeDiff <= 0) {
       return null; // Recreio já passou ou está acontecendo
     }
@@ -93,12 +110,18 @@ export default function HomeScreen({ navigation, route }) {
 
   const handleAccessBreak = () => {
     if (!isSchoolDay()) {
-      Alert.alert("Aviso", "Só é possível acessar o sistema durante os dias de aula (Segunda a Quinta).");
+      Alert.alert(
+        "Aviso",
+        "Só é possível acessar o sistema durante os dias de aula (Segunda a Quinta)."
+      );
       return;
     }
 
     if (!isSchoolTime()) {
-      Alert.alert("Aviso", "Só é possível acessar o sistema durante o horário de aula (13:45 às 17:15).");
+      Alert.alert(
+        "Aviso",
+        "Só é possível acessar o sistema durante o horário de aula (13:45 às 17:15)."
+      );
       return;
     }
 
@@ -108,11 +131,14 @@ export default function HomeScreen({ navigation, route }) {
     }
 
     if (!canAccessBreak()) {
-      Alert.alert("Aviso", "Você só pode acessar o sistema 5 minutos antes do recreio.");
+      Alert.alert(
+        "Aviso",
+        "Você só pode acessar o sistema 5 minutos antes do recreio."
+      );
       return;
     }
 
-    navigation.navigate("ReceiveScreen");
+    navigation.navigate("ReceiveScreen", { student: student });
   };
 
   const formatTime = (time) => {
@@ -121,7 +147,7 @@ export default function HomeScreen({ navigation, route }) {
 
   const renderTimeUntilBreak = () => {
     const timeUntil = getTimeUntilBreak();
-    
+
     if (!timeUntil) {
       return (
         <CustomText style={[styles.timeText, { color: colors.secondary }]}>
@@ -132,7 +158,8 @@ export default function HomeScreen({ navigation, route }) {
 
     return (
       <CustomText style={[styles.timeText, { color: colors.text }]}>
-        Tempo para o recreio: {formatTime(timeUntil.minutes)}:{formatTime(timeUntil.seconds)}
+        Tempo para o recreio: {formatTime(timeUntil.minutes)}:
+        {formatTime(timeUntil.seconds)}
       </CustomText>
     );
   };
@@ -142,30 +169,47 @@ export default function HomeScreen({ navigation, route }) {
       <View style={styles.content}>
         <View style={styles.header}>
           <CustomText style={[styles.title, { color: colors.text }]}>
-            Bem-vindo!
+            Bem-vindo, {student.name}!
           </CustomText>
           <CustomText style={[styles.subtitle, { color: colors.secondary }]}>
             {classInfo.name}
           </CustomText>
         </View>
 
-        <View style={[styles.card, { backgroundColor: colors.cardBackground, borderColor: colors.border }]}>
+        <View
+          style={[
+            styles.card,
+            {
+              backgroundColor: colors.cardBackground,
+              borderColor: colors.border,
+            },
+          ]}
+        >
           <CustomText style={[styles.cardTitle, { color: colors.text }]}>
             Horário do Recreio
           </CustomText>
           <CustomText style={[styles.breakTime, { color: colors.accent }]}>
             {classInfo.breakStart} às {classInfo.breakEnd}
           </CustomText>
-          
+
           {renderTimeUntilBreak()}
         </View>
 
         {ticketRedeemed ? (
-          <View style={[styles.redeemedCard, { backgroundColor: colors.success, borderColor: colors.success }]}>
-            <CustomText style={[styles.redeemedText, { color: colors.cardBackground }]}>
+          <View
+            style={[
+              styles.redeemedCard,
+              { backgroundColor: colors.success, borderColor: colors.success },
+            ]}
+          >
+            <CustomText
+              style={[styles.redeemedText, { color: colors.cardBackground }]}
+            >
               ✓ Ticket já resgatado hoje!
             </CustomText>
-            <CustomText style={[styles.redeemedSubtext, { color: colors.cardBackground }]}>
+            <CustomText
+              style={[styles.redeemedSubtext, { color: colors.cardBackground }]}
+            >
               Volte amanhã para resgatar um novo ticket
             </CustomText>
           </View>
@@ -268,4 +312,3 @@ const styles = StyleSheet.create({
     textAlign: "center",
   },
 });
-

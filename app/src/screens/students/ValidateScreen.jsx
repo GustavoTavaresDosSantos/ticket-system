@@ -1,11 +1,5 @@
-import React, { useState } from "react";
-import {
-  View,
-  StyleSheet,
-  Alert,
-  Animated,
-  Dimensions,
-} from "react-native";
+import React, { useState, useEffect } from "react";
+import { View, StyleSheet, Alert, Animated, Dimensions } from "react-native";
 import { useSelector } from "react-redux";
 import { LinearGradient } from "expo-linear-gradient";
 import CustomText from "../../components/CustomText";
@@ -13,13 +7,36 @@ import CustomButton from "../../components/CustomButton";
 
 const { width, height } = Dimensions.get("window");
 
-export default function ValidateScreen({ navigation }) {
+export default function ValidateScreen({ navigation, route }) {
   const themeState = useSelector((state) => state.theme);
   const currentTheme = themeState.theme;
   const colors = themeState.colors[currentTheme];
 
+  const { student } = route.params; // Recebe os dados do aluno
+
   const [ticketTorn, setTicketTorn] = useState(false);
   const [fadeAnim] = useState(new Animated.Value(1));
+
+  // Dados das turmas e horários de recreio
+  const classes = {
+    "DS-V1": {
+      name: "Desenvolvimento de Sistemas/V1",
+      breakStart: "15:00",
+      breakEnd: "15:15",
+    },
+    "DS-V2": {
+      name: "Desenvolvimento de Sistemas/V2",
+      breakStart: "15:30",
+      breakEnd: "15:45",
+    },
+    "MA-V1": {
+      name: "Mecânica Automotiva/V1",
+      breakStart: "16:00",
+      breakEnd: "16:15",
+    },
+  };
+
+  const classInfo = classes[student.class]; // Usa a turma do aluno logado
 
   const handleTearTicket = () => {
     Alert.alert(
@@ -35,7 +52,7 @@ export default function ValidateScreen({ navigation }) {
           style: "destructive",
           onPress: () => {
             setTicketTorn(true);
-            
+
             // Animação de fade out
             Animated.timing(fadeAnim, {
               toValue: 0,
@@ -56,7 +73,9 @@ export default function ValidateScreen({ navigation }) {
   const generateTicketNumber = () => {
     const date = new Date();
     const dateStr = date.toISOString().slice(0, 10).replace(/-/g, "");
-    const randomNum = Math.floor(Math.random() * 1000).toString().padStart(3, "0");
+    const randomNum = Math.floor(Math.random() * 1000)
+      .toString()
+      .padStart(3, "0");
     return `TK${dateStr}${randomNum}`;
   };
 
@@ -65,12 +84,18 @@ export default function ValidateScreen({ navigation }) {
   if (ticketTorn) {
     return (
       <View style={[styles.container, { backgroundColor: colors.body }]}>
-        <Animated.View style={[styles.tornTicketContainer, { opacity: fadeAnim }]}>
+        <Animated.View
+          style={[styles.tornTicketContainer, { opacity: fadeAnim }]}
+        >
           <View style={[styles.tornTicket, { backgroundColor: colors.danger }]}>
-            <CustomText style={[styles.tornText, { color: colors.cardBackground }]}>
+            <CustomText
+              style={[styles.tornText, { color: colors.cardBackground }]}
+            >
               🎫 TICKET RASGADO
             </CustomText>
-            <CustomText style={[styles.tornSubtext, { color: colors.cardBackground }]}>
+            <CustomText
+              style={[styles.tornSubtext, { color: colors.cardBackground }]}
+            >
               Lanche liberado!
             </CustomText>
           </View>
@@ -93,7 +118,11 @@ export default function ValidateScreen({ navigation }) {
 
         <View style={styles.ticketContainer}>
           <LinearGradient
-            colors={currentTheme === "light" ? ["#4dabf7", "#339af0"] : ["#339af0", "#228be6"]}
+            colors={
+              currentTheme === "light"
+                ? ["#4dabf7", "#339af0"]
+                : ["#339af0", "#228be6"]
+            }
             style={styles.ticket}
           >
             <View style={styles.ticketHeader}>
@@ -108,19 +137,30 @@ export default function ValidateScreen({ navigation }) {
             <View style={styles.ticketBody}>
               <View style={styles.ticketRow}>
                 <CustomText style={styles.ticketLabel}>Aluno:</CustomText>
-                <CustomText style={styles.ticketValue}>Estudante Teste</CustomText>
+                <CustomText style={styles.ticketValue}>
+                  {student.name}
+                </CustomText>
               </View>
-              
+
+              <View style={styles.ticketRow}>
+                <CustomText style={styles.ticketLabel}>Matrícula:</CustomText>
+                <CustomText style={styles.ticketValue}>{student.id}</CustomText>
+              </View>
+
               <View style={styles.ticketRow}>
                 <CustomText style={styles.ticketLabel}>Turma:</CustomText>
-                <CustomText style={styles.ticketValue}>Desenvolvimento de Sistemas/V1</CustomText>
+                <CustomText style={styles.ticketValue}>
+                  {classInfo.name}
+                </CustomText>
               </View>
-              
+
               <View style={styles.ticketRow}>
                 <CustomText style={styles.ticketLabel}>Recreio:</CustomText>
-                <CustomText style={styles.ticketValue}>15:00 às 15:15</CustomText>
+                <CustomText style={styles.ticketValue}>
+                  {classInfo.breakStart} às {classInfo.breakEnd}
+                </CustomText>
               </View>
-              
+
               <View style={styles.ticketRow}>
                 <CustomText style={styles.ticketLabel}>Data:</CustomText>
                 <CustomText style={styles.ticketValue}>
@@ -142,7 +182,9 @@ export default function ValidateScreen({ navigation }) {
         </View>
 
         <View style={styles.instructionContainer}>
-          <CustomText style={[styles.instructionText, { color: colors.secondary }]}>
+          <CustomText
+            style={[styles.instructionText, { color: colors.secondary }]}
+          >
             Aguarde o atendente rasgar este ticket para liberar seu lanche
           </CustomText>
         </View>
@@ -165,8 +207,9 @@ const styles = StyleSheet.create({
   },
   content: {
     flex: 1,
-    padding: 24,
     justifyContent: "center",
+    alignItems: "center",
+    padding: 24,
   },
   header: {
     alignItems: "center",
@@ -310,4 +353,3 @@ const styles = StyleSheet.create({
     fontWeight: "600",
   },
 });
-

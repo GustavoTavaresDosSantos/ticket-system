@@ -81,15 +81,21 @@ Contribuições são bem-vindas! Sinta-se à vontade para abrir issues e pull re
 
 ## Licença
 
-Este projeto está licenciado sob a licença MIT. Veja o arquivo `LICENSE` para mais detalhes.
+Este projeto está licenciado sob a licença MIT. Veja o arquivo `LICENSE` para mais detalhes. (Nota: O arquivo LICENSE não está presente no repositório original, mas é uma boa prática incluí-lo.)
+
+
+
 
 ## Instruções de Teste
 
-### Usuários de Teste Criados
+
+
+
+## Usuários de Teste Criados
 
 O sistema foi configurado com os seguintes usuários de teste:
 
-#### Alunos:
+### Alunos:
 1. **João Silva (DS-V1)**
    - Matrícula: `12345678`
    - Senha: `123456`
@@ -108,20 +114,20 @@ O sistema foi configurado com os seguintes usuários de teste:
    - Turma: Mecânica Automotiva/V1
    - Recreio: 16:00 às 16:15
 
-#### Administrador:
+### Administrador:
 - **Administrador**
   - Login: `admin123`
   - Senha: `admin123`
 
-### Como Testar
+## Como Testar
 
-#### 1. Executar o Projeto
+### 1. Executar o Projeto
 ```bash
 cd app
 npm start
 ```
 
-#### 2. Fluxo de Teste do Aluno
+### 2. Fluxo de Teste do Aluno
 
 1. **Tela Inicial**: Escolha "Aluno"
 2. **Login**: Use uma das matrículas e senhas acima
@@ -138,7 +144,7 @@ npm start
 6. **Retorno à HomeScreen**:
    - Veja que o ticket foi marcado como resgatado
 
-#### 3. Validações Implementadas
+### 3. Validações Implementadas
 
 - ✅ Só funciona de Segunda a Quinta-feira
 - ✅ Só funciona no horário de aula (13:45 às 17:15)
@@ -147,23 +153,23 @@ npm start
 - ✅ Verificação de localização (simulada)
 - ✅ Tema claro/escuro funcional
 
-#### 4. Funcionalidades das Telas
+### 4. Funcionalidades das Telas
 
-##### HomeScreen
+#### HomeScreen
 - Exibe horário do recreio da turma
 - Contador em tempo real até o recreio
 - Botão habilitado apenas no horário correto
 - Indicação visual quando ticket já foi resgatado
 - Botão de mudança de tema no header
 
-##### ReceiveScreen
+#### ReceiveScreen
 - Mapa com localização do usuário
 - Marcador da escola no mapa
 - Status da localização (correto/incorreto)
 - Contador de tempo restante do recreio (incluindo 5 min extras)
 - Botão habilitado apenas quando no local correto
 
-##### ValidateScreen
+#### ValidateScreen
 - Ticket visual com design atrativo
 - Informações do aluno e turma
 - Número único do ticket
@@ -171,14 +177,14 @@ npm start
 - Animação de ticket rasgado
 - Redirecionamento automático para HomeScreen
 
-#### 5. Observações Importantes
+### 5. Observações Importantes
 
 - Para testar a funcionalidade completa, você pode ajustar os horários no código temporariamente
 - A verificação de localização está simulada (considera correto se estiver a menos de 100m da coordenada da escola)
 - O sistema persiste o estado do ticket usando AsyncStorage
 - Todos os temas (claro/escuro) são aplicados consistentemente em todas as telas
 
-#### 6. Dependências Instaladas
+### 6. Dependências Instaladas
 
 - `expo-location`: Para geolocalização
 - `react-native-maps`: Para exibição do mapa
@@ -186,3 +192,4 @@ npm start
 - `@react-navigation/native`: Para navegação
 - `@reduxjs/toolkit`: Para gerenciamento de estado
 - `formik` e `yup`: Para validação de formulários
+

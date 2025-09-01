@@ -44,7 +44,7 @@ export default function LoginScreen({ navigation }) {
 
       if (student) {
         Alert.alert("Sucesso", "Login bem-sucedido!");
-        navigation.navigate("HomeScreen");
+        navigation.navigate("HomeScreen", { student: student });
       } else {
         Alert.alert("Erro", "Matrícula ou senha incorretas.");
       }
