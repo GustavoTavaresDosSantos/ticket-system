@@ -1,5 +1,10 @@
 import React, { useState, useEffect } from "react";
-import { View, StyleSheet, Alert, TouchableOpacity } from "react-native";
+import {
+  View,
+  StyleSheet,
+  Alert,
+  TouchableOpacity,
+} from "react-native";
 import { useSelector } from "react-redux";
 import CustomText from "../../components/CustomText";
 import CustomButton from "../../components/CustomButton";
@@ -24,21 +29,9 @@ export default function HomeScreen({ navigation, route }) {
 
   // Dados das turmas e horários de recreio
   const classes = {
-    "DS-V1": {
-      name: "Desenvolvimento de Sistemas/V1",
-      breakStart: "15:00",
-      breakEnd: "15:15",
-    },
-    "DS-V2": {
-      name: "Desenvolvimento de Sistemas/V2",
-      breakStart: "15:30",
-      breakEnd: "15:45",
-    },
-    "MA-V1": {
-      name: "Mecânica Automotiva/V1",
-      breakStart: "16:00",
-      breakEnd: "16:15",
-    },
+    "DS-V1": { name: "Desenvolvimento de Sistemas/V1", breakStart: "15:00", breakEnd: "15:15" },
+    "DS-V2": { name: "Desenvolvimento de Sistemas/V2", breakStart: "15:30", breakEnd: "15:45" },
+    "MA-V1": { name: "Mecânica Automotiva/V1", breakStart: "16:00", breakEnd: "16:15" }
   };
 
   const classInfo = classes[student.class]; // Usa a turma do aluno logado
@@ -76,23 +69,40 @@ export default function HomeScreen({ navigation, route }) {
     const hours = currentTime.getHours();
     const minutes = currentTime.getMinutes();
     const currentMinutes = hours * 60 + minutes;
-
+    
     // Aulas das 13:45 às 17:15
     const startTime = 13 * 60 + 45; // 13:45
-    const endTime = 17 * 60 + 15; // 17:15
-
+    const endTime = 17 * 60 + 15;   // 17:15
+    
     return currentMinutes >= startTime && currentMinutes <= endTime;
   };
 
+  const getBreakStatus = () => {
+    const [breakStartHour, breakStartMinute] = classInfo.breakStart.split(':').map(Number);
+    const [breakEndHour, breakEndMinute] = classInfo.breakEnd.split(':').map(Number);
+
+    const currentMinutes = currentTime.getHours() * 60 + currentTime.getMinutes();
+    const breakStartMinutes = breakStartHour * 60 + breakStartMinute;
+    const breakEndMinutes = breakEndHour * 60 + breakEndMinute;
+
+    if (currentMinutes >= breakStartMinutes && currentMinutes <= breakEndMinutes) {
+      return "during"; // Recreio acontecendo
+    } else if (currentMinutes > breakEndMinutes) {
+      return "passed"; // Recreio já passou
+    } else if (currentMinutes >= breakStartMinutes - 5 && currentMinutes < breakStartMinutes) {
+      return "pre"; // 5 minutos antes do recreio
+    } else {
+      return "future"; // Recreio no futuro
+    }
+  };
+
   const getTimeUntilBreak = () => {
-    const [breakHour, breakMinute] = classInfo.breakStart
-      .split(":")
-      .map(Number);
+    const [breakHour, breakMinute] = classInfo.breakStart.split(':').map(Number);
     const breakTime = new Date(currentTime);
     breakTime.setHours(breakHour, breakMinute, 0, 0);
 
     const timeDiff = breakTime.getTime() - currentTime.getTime();
-
+    
     if (timeDiff <= 0) {
       return null; // Recreio já passou ou está acontecendo
     }
@@ -104,24 +114,18 @@ export default function HomeScreen({ navigation, route }) {
   };
 
   const canAccessBreak = () => {
-    const timeUntil = getTimeUntilBreak();
-    return timeUntil && timeUntil.minutes <= 5; // 5 minutos antes do recreio
+    const status = getBreakStatus();
+    return status === "pre" || status === "during";
   };
 
   const handleAccessBreak = () => {
     if (!isSchoolDay()) {
-      Alert.alert(
-        "Aviso",
-        "Só é possível acessar o sistema durante os dias de aula (Segunda a Quinta)."
-      );
+      Alert.alert("Aviso", "Só é possível acessar o sistema durante os dias de aula (Segunda a Quinta).");
       return;
     }
 
     if (!isSchoolTime()) {
-      Alert.alert(
-        "Aviso",
-        "Só é possível acessar o sistema durante o horário de aula (13:45 às 17:15)."
-      );
+      Alert.alert("Aviso", "Só é possível acessar o sistema durante o horário de aula (13:45 às 17:15).");
       return;
     }
 
@@ -130,11 +134,13 @@ export default function HomeScreen({ navigation, route }) {
       return;
     }
 
-    if (!canAccessBreak()) {
-      Alert.alert(
-        "Aviso",
-        "Você só pode acessar o sistema 5 minutos antes do recreio."
-      );
+    const breakStatus = getBreakStatus();
+    if (breakStatus === "future") {
+      Alert.alert("Aviso", "Você só pode acessar o sistema 5 minutos antes ou durante o recreio.");
+      return;
+    }
+    if (breakStatus === "passed") {
+      Alert.alert("Aviso", "O recreio já passou. Você não pode mais acessar o sistema hoje.");
       return;
     }
 
@@ -146,22 +152,34 @@ export default function HomeScreen({ navigation, route }) {
   };
 
   const renderTimeUntilBreak = () => {
+    const status = getBreakStatus();
     const timeUntil = getTimeUntilBreak();
 
-    if (!timeUntil) {
+    if (status === "passed") {
       return (
         <CustomText style={[styles.timeText, { color: colors.secondary }]}>
-          O recreio já passou ou está acontecendo
+          O recreio já passou.
+        </CustomText>
+      );
+    } else if (status === "during") {
+      return (
+        <CustomText style={[styles.timeText, { color: colors.secondary }]}>
+          O recreio está acontecendo!
+        </CustomText>
+      );
+    } else if (status === "pre") {
+      return (
+        <CustomText style={[styles.timeText, { color: colors.text }]}>
+          Tempo para o recreio: {formatTime(timeUntil.minutes)}:{formatTime(timeUntil.seconds)}
+        </CustomText>
+      );
+    } else {
+      return (
+        <CustomText style={[styles.timeText, { color: colors.text }]}>
+          Tempo para o recreio: {formatTime(timeUntil.minutes)}:{formatTime(timeUntil.seconds)}
         </CustomText>
       );
     }
-
-    return (
-      <CustomText style={[styles.timeText, { color: colors.text }]}>
-        Tempo para o recreio: {formatTime(timeUntil.minutes)}:
-        {formatTime(timeUntil.seconds)}
-      </CustomText>
-    );
   };
 
   return (
@@ -176,40 +194,23 @@ export default function HomeScreen({ navigation, route }) {
           </CustomText>
         </View>
 
-        <View
-          style={[
-            styles.card,
-            {
-              backgroundColor: colors.cardBackground,
-              borderColor: colors.border,
-            },
-          ]}
-        >
+        <View style={[styles.card, { backgroundColor: colors.cardBackground, borderColor: colors.border }]}>
           <CustomText style={[styles.cardTitle, { color: colors.text }]}>
             Horário do Recreio
           </CustomText>
           <CustomText style={[styles.breakTime, { color: colors.accent }]}>
             {classInfo.breakStart} às {classInfo.breakEnd}
           </CustomText>
-
+          
           {renderTimeUntilBreak()}
         </View>
 
         {ticketRedeemed ? (
-          <View
-            style={[
-              styles.redeemedCard,
-              { backgroundColor: colors.success, borderColor: colors.success },
-            ]}
-          >
-            <CustomText
-              style={[styles.redeemedText, { color: colors.cardBackground }]}
-            >
+          <View style={[styles.redeemedCard, { backgroundColor: colors.success, borderColor: colors.success }]}>
+            <CustomText style={[styles.redeemedText, { color: colors.cardBackground }]}>
               ✓ Ticket já resgatado hoje!
             </CustomText>
-            <CustomText
-              style={[styles.redeemedSubtext, { color: colors.cardBackground }]}
-            >
+            <CustomText style={[styles.redeemedSubtext, { color: colors.cardBackground }]}>
               Volte amanhã para resgatar um novo ticket
             </CustomText>
           </View>
@@ -312,3 +313,4 @@ const styles = StyleSheet.create({
     textAlign: "center",
   },
 });
+
