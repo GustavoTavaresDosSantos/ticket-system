@@ -1,11 +1,17 @@
 import React, { useState } from "react";
-import { View, StyleSheet, Alert, KeyboardAvoidingView, Platform } from "react-native";
+import {
+  View,
+  StyleSheet,
+  Alert,
+  KeyboardAvoidingView,
+  Platform,
+} from "react-native";
 import CustomInput from "../../components/CustomInput";
 import CustomButton from "../../components/CustomButton";
 import CustomText from "../../components/CustomText";
 import { useSelector } from "react-redux";
 
-export default function AdminLoginScreen({ navigation }) {
+export default function LoginScreen({ navigation }) {
   const themeState = useSelector((state) => state.theme);
   const currentTheme = themeState.theme;
   const colors = themeState.colors[currentTheme];
@@ -35,16 +41,16 @@ export default function AdminLoginScreen({ navigation }) {
   };
 
   const handleInputChange = (field, value) => {
-    setFormData(prev => ({
+    setFormData((prev) => ({
       ...prev,
-      [field]: value
+      [field]: value,
     }));
 
     // Limpar erro do campo quando o usuário começar a digitar
     if (errors[field]) {
-      setErrors(prev => ({
+      setErrors((prev) => ({
         ...prev,
-        [field]: ""
+        [field]: "",
       }));
     }
   };
@@ -58,11 +64,11 @@ export default function AdminLoginScreen({ navigation }) {
 
     try {
       // Simular chamada de API
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      
+      await new Promise((resolve) => setTimeout(resolve, 1000));
+
       // Aqui você implementaria a lógica real de autenticação
       console.log(`Admin logando: ${formData.user}`);
-      
+
       // Exemplo de validação simples (remover em produção)
       if (formData.user === "admin" && formData.password === "123456") {
         Alert.alert("Sucesso", "Login realizado com sucesso!");
@@ -79,7 +85,7 @@ export default function AdminLoginScreen({ navigation }) {
   };
 
   return (
-    <KeyboardAvoidingView 
+    <KeyboardAvoidingView
       style={[styles.container, { backgroundColor: colors.body }]}
       behavior={Platform.OS === "ios" ? "padding" : "height"}
     >
@@ -94,14 +100,14 @@ export default function AdminLoginScreen({ navigation }) {
         </View>
 
         <View style={styles.form}>
-          <CustomInput 
+          <CustomInput
             label="Usuário"
-            placeholder="Digite seu usuário" 
-            value={formData.user} 
+            placeholder="Digite seu usuário"
+            value={formData.user}
             onChangeText={(value) => handleInputChange("user", value)}
             error={errors.user}
           />
-          
+
           <CustomInput
             label="Senha"
             placeholder="Digite sua senha"
@@ -112,8 +118,8 @@ export default function AdminLoginScreen({ navigation }) {
           />
 
           <View style={styles.buttonContainer}>
-            <CustomButton 
-              title={isLoading ? "Entrando..." : "Entrar"} 
+            <CustomButton
+              title={isLoading ? "Entrando..." : "Entrar"}
               onPress={handleLogin}
               disabled={isLoading}
             />

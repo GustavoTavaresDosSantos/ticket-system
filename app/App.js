@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect } from "react";
 import { TouchableOpacity } from "react-native";
 import { Provider, useSelector, useDispatch } from "react-redux";
 import { store } from "./src/store/store";
@@ -6,10 +6,14 @@ import { toggleTheme } from "./src/store/themeSlice";
 import { NavigationContainer } from "@react-navigation/native";
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
 import { Feather } from "@expo/vector-icons";
+import { checkAndCreateMockUsers } from "./src/utils/mockData";
 
 import ChooseRoleScreen from "./src/screens/ChooseRoleScreen";
 import StudentLoginScreen from "./src/screens/students/LoginScreen";
 import AdminLoginScreen from "./src/screens/admins/LoginScreen";
+import HomeScreen from "./src/screens/students/HomeScreen";
+import ReceiveScreen from "./src/screens/students/ReceiveScreen";
+import ValidateScreen from "./src/screens/students/ValidateScreen";
 
 
 const Stack = createNativeStackNavigator();
@@ -19,6 +23,11 @@ function AppNavigator() {
   const themeState = useSelector((state) => state.theme);
   const currentTheme = themeState.theme;
   const colors = themeState.colors[currentTheme];
+
+  useEffect(() => {
+    // Criar usuários de teste na inicialização
+    checkAndCreateMockUsers();
+  }, []);
 
   return (
     <NavigationContainer>
@@ -62,6 +71,21 @@ function AppNavigator() {
           name="AdminLogin"
           component={AdminLoginScreen}
           options={{ title: "Login Admin" }}
+        />
+        <Stack.Screen
+          name="HomeScreen"
+          component={HomeScreen}
+          options={{ title: "Início" }}
+        />
+        <Stack.Screen
+          name="ReceiveScreen"
+          component={ReceiveScreen}
+          options={{ title: "Validar Localização" }}
+        />
+        <Stack.Screen
+          name="ValidateScreen"
+          component={ValidateScreen}
+          options={{ title: "Ticket" }}
         />
 
       </Stack.Navigator>
