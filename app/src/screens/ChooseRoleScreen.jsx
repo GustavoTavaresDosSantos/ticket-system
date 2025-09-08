@@ -34,7 +34,9 @@ export default function ChooseRoleScreen({ navigation }) {
             <CustomText style={[styles.roleTitle, { color: colors.text }]}>
               Estudante
             </CustomText>
-            <CustomText style={[styles.roleDescription, { color: colors.secondary }]}>
+            <CustomText
+              style={[styles.roleDescription, { color: colors.secondary }]}
+            >
               Abra e acompanhe seus tickets de suporte
             </CustomText>
             <CustomButton
@@ -48,7 +50,9 @@ export default function ChooseRoleScreen({ navigation }) {
             <CustomText style={[styles.roleTitle, { color: colors.text }]}>
               Administrador
             </CustomText>
-            <CustomText style={[styles.roleDescription, { color: colors.secondary }]}>
+            <CustomText
+              style={[styles.roleDescription, { color: colors.secondary }]}
+            >
               Gerencie tickets e usuários do sistema
             </CustomText>
             <CustomButton

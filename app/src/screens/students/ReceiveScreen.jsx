@@ -1,15 +1,15 @@
-import React, { useState, useEffect } from "react";
-import {
-  View,
-  StyleSheet,
-  Alert,
-  Dimensions,
-} from "react-native";
+import React, { useState, useEffect, useRef } from "react";
+import { View, StyleSheet, Alert, Dimensions } from "react-native";
 import { useSelector } from "react-redux";
 import * as Location from "expo-location";
-import MapView, { Marker } from "react-native-maps";
+import MapView, { Marker, Circle } from "react-native-maps";
 import CustomText from "../../components/CustomText";
 import CustomButton from "../../components/CustomButton";
+import {
+  getLocalTimeInGMT3,
+  classes,
+  schoolLocation,
+} from "../../utils/timeAndConstants";
 
 const { width, height } = Dimensions.get("window");
 
@@ -18,37 +18,14 @@ export default function ReceiveScreen({ navigation, route }) {
   const currentTheme = themeState.theme;
   const colors = themeState.colors[currentTheme];
 
-  const { student } = route.params; // Recebe os dados do aluno
+  const { student } = route.params;
+  const classInfo = classes[student.class];
 
   const [currentTime, setCurrentTime] = useState(new Date());
   const [location, setLocation] = useState(null);
   const [isInCorrectLocation, setIsInCorrectLocation] = useState(false);
 
-  // Coordenadas da escola (exemplo - você deve ajustar para a localização real)
-  const schoolLocation = {
-    latitude: -27.6183087,
-    longitude: -48.6628648,
-    latitudeDelta: 0.005,
-    longitudeDelta: 0.005,
-  };
-
-  // Dados das turmas e horários de recreio
-  const classes = {
-    "DS-V1": { name: "Desenvolvimento de Sistemas/V1", breakStart: "15:00", breakEnd: "15:15" },
-    "DS-V2": { name: "Desenvolvimento de Sistemas/V2", breakStart: "15:30", breakEnd: "15:45" },
-    "MA-V1": { name: "Mecânica Automotiva/V1", breakStart: "16:00", breakEnd: "16:15" },
-    "TEST": { name: "Turma de Teste", breakStart: "00:00", breakEnd: "23:59" }
-  };
-
-  const classInfo = classes[student.class]; // Usa a turma do aluno logado
-
-const getLocalTimeInGMT3 = () => {
-  const now = new Date();
-  const offset = now.getTimezoneOffset() * 60 * 1000; // offset em milissegundos
-  const gmt3Offset = -3 * 60 * 60 * 1000; // GMT-3 em milissegundos
-  const gmt3Time = new Date(now.getTime() + offset + gmt3Offset);
-  return gmt3Time;
-};
+  const mapRef = useRef(null);
 
   useEffect(() => {
     const timer = setInterval(() => {
@@ -71,6 +48,18 @@ const getLocalTimeInGMT3 = () => {
       let currentLocation = await Location.getCurrentPositionAsync({});
       setLocation(currentLocation);
       checkIfInCorrectLocation(currentLocation);
+
+      if (mapRef.current) {
+        mapRef.current.animateToRegion(
+          {
+            latitude: currentLocation.coords.latitude,
+            longitude: currentLocation.coords.longitude,
+            latitudeDelta: 0.002,
+            longitudeDelta: 0.002,
+          },
+          1000
+        );
+      }
     } catch (error) {
       console.error("Erro ao obter localização:", error);
       Alert.alert("Erro", "Não foi possível obter sua localização");
@@ -91,40 +80,34 @@ const getLocalTimeInGMT3 = () => {
       schoolLocation.longitude
     );
 
-    // Considera que está no local correto se estiver a menos de 100 metros
     setIsInCorrectLocation(distance < 0.1);
   };
 
   const getDistanceFromLatLonInKm = (lat1, lon1, lat2, lon2) => {
-    const R = 6371; // Raio da Terra em km
+    const R = 6371;
     const dLat = deg2rad(lat2 - lat1);
     const dLon = deg2rad(lon2 - lon1);
     const a =
       Math.sin(dLat / 2) * Math.sin(dLat / 2) +
-      Math.cos(deg2rad(lat1)) * Math.cos(deg2rad(lat2)) *
-      Math.sin(dLon / 2) * Math.sin(dLon / 2);
+      Math.cos(deg2rad(lat1)) *
+        Math.cos(deg2rad(lat2)) *
+        Math.sin(dLon / 2) *
+        Math.sin(dLon / 2);
     const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-    const d = R * c; // Distância em km
-    return d;
+    return R * c;
   };
 
-  const deg2rad = (deg) => {
-    return deg * (Math.PI / 180);
-  };
+  const deg2rad = (deg) => deg * (Math.PI / 180);
 
   const getTimeUntilBreakEnd = () => {
     const [breakHour, breakMinute] = classInfo.breakEnd.split(":").map(Number);
     const breakEndTime = new Date(currentTime);
     breakEndTime.setHours(breakHour, breakMinute, 0, 0);
-
-    // Adicionar 5 minutos extras
     breakEndTime.setMinutes(breakEndTime.getMinutes() + 5);
 
     const timeDiff = breakEndTime.getTime() - currentTime.getTime();
-    
-    if (timeDiff <= 0) {
-      return null; // Tempo acabou
-    }
+
+    if (timeDiff <= 0) return null;
 
     const minutes = Math.floor(timeDiff / (1000 * 60));
     const seconds = Math.floor((timeDiff % (1000 * 60)) / 1000);
@@ -132,27 +115,28 @@ const getLocalTimeInGMT3 = () => {
     return { minutes, seconds };
   };
 
-  const formatTime = (time) => {
-    return time < 10 ? `0${time}` : time;
-  };
+  const formatTime = (time) => (time < 10 ? `0${time}` : time);
 
   const handleValidateTicket = () => {
     if (student.id === "99999999") {
-      navigation.navigate("ValidateScreen", { student: student });
+      navigation.navigate("ValidateScreen", { student });
       return;
     }
 
     if (!isInCorrectLocation) {
-      Alert.alert("Aviso", "Você precisa estar no local correto para validar o ticket.");
+      Alert.alert(
+        "Aviso",
+        "Você precisa estar no local correto para validar o ticket."
+      );
       return;
     }
 
-    navigation.navigate("ValidateScreen", { student: student });
+    navigation.navigate("ValidateScreen", { student });
   };
 
   const renderTimeRemaining = () => {
     const timeUntil = getTimeUntilBreakEnd();
-    
+
     if (!timeUntil) {
       return (
         <CustomText style={[styles.timeText, { color: colors.danger }]}>
@@ -163,7 +147,8 @@ const getLocalTimeInGMT3 = () => {
 
     return (
       <CustomText style={[styles.timeText, { color: colors.text }]}>
-        Tempo restante: {formatTime(timeUntil.minutes)}:{formatTime(timeUntil.seconds)}
+        Tempo restante: {formatTime(timeUntil.minutes)}:
+        {formatTime(timeUntil.seconds)}
       </CustomText>
     );
   };
@@ -172,12 +157,25 @@ const getLocalTimeInGMT3 = () => {
     <View style={[styles.container, { backgroundColor: colors.body }]}>
       <View style={styles.topSection}>
         {renderTimeRemaining()}
-        
-        <View style={[styles.locationCard, { backgroundColor: colors.cardBackground, borderColor: colors.border }]}>
+
+        <View
+          style={[
+            styles.locationCard,
+            {
+              backgroundColor: colors.cardBackground,
+              borderColor: colors.border,
+            },
+          ]}
+        >
           <CustomText style={[styles.locationTitle, { color: colors.text }]}>
             Status da Localização
           </CustomText>
-          <CustomText style={[styles.locationStatus, { color: isInCorrectLocation ? colors.success : colors.danger }]}>
+          <CustomText
+            style={[
+              styles.locationStatus,
+              { color: isInCorrectLocation ? colors.success : colors.danger },
+            ]}
+          >
             {isInCorrectLocation ? "✓ No local correto" : "✗ Fora do local"}
           </CustomText>
         </View>
@@ -194,12 +192,13 @@ const getLocalTimeInGMT3 = () => {
       <View style={styles.mapContainer}>
         {location ? (
           <MapView
+            ref={mapRef}
             style={styles.map}
             initialRegion={{
               latitude: location.coords.latitude,
               longitude: location.coords.longitude,
-              latitudeDelta: 0.01,
-              longitudeDelta: 0.01,
+              latitudeDelta: 0.005,
+              longitudeDelta: 0.005,
             }}
             showsUserLocation={true}
             showsMyLocationButton={true}
@@ -210,9 +209,22 @@ const getLocalTimeInGMT3 = () => {
               description="Local para resgatar o ticket"
               pinColor={colors.accent}
             />
+
+            <Circle
+              center={schoolLocation}
+              radius={10}
+              strokeColor={
+                isInCorrectLocation ? "rgba(0,200,0,0.7)" : "rgba(200,0,0,0.7)"
+              }
+              fillColor={
+                isInCorrectLocation ? "rgba(0,200,0,0.3)" : "rgba(200,0,0,0.2)"
+              }
+            />
           </MapView>
         ) : (
-          <View style={[styles.loadingMap, { backgroundColor: colors.disabled }]}>
+          <View
+            style={[styles.loadingMap, { backgroundColor: colors.disabled }]}
+          >
             <CustomText style={[styles.loadingText, { color: colors.text }]}>
               Carregando mapa...
             </CustomText>
@@ -275,5 +287,3 @@ const styles = StyleSheet.create({
     fontSize: 16,
   },
 });
-
-

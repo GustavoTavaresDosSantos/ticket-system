@@ -1,76 +1,38 @@
 import React, { useState, useEffect } from "react";
-import { View, StyleSheet, Alert, TouchableOpacity } from "react-native";
+import { View, StyleSheet, Alert } from "react-native";
 import { useSelector } from "react-redux";
 import CustomText from "../../components/CustomText";
 import CustomButton from "../../components/CustomButton";
+import { getLocalTimeInGMT3, classes } from "../../utils/timeAndConstants";
 
 export default function HomeScreen({ navigation, route }) {
   const themeState = useSelector((state) => state.theme);
   const currentTheme = themeState.theme;
   const colors = themeState.colors[currentTheme];
 
-  const { student } = route.params; // Recebe os dados do aluno
+  const { student } = route.params;
+  const classInfo = classes[student.class];
 
-  const getLocalTimeInGMT3 = () => {
-    const now = new Date();
-    const offset = now.getTimezoneOffset() * 60 * 1000; // offset em milissegundos
-    const gmt3Offset = -3 * 60 * 60 * 1000; // GMT-3 em milissegundos
-    const gmt3Time = new Date(now.getTime() + offset + gmt3Offset);
-    return gmt3Time;
-  };
-
-  const [currentTime, setCurrentTime] = useState(new Date());
+  const [currentTime, setCurrentTime] = useState(getLocalTimeInGMT3());
   const [ticketRedeemed, setTicketRedeemed] = useState(false);
-
-  // Dados das turmas e horários de recreio
-  const classes = {
-    "DS-V1": {
-      name: "Desenvolvimento de Sistemas/V1",
-      breakStart: "15:00",
-      breakEnd: "15:15",
-    },
-    "DS-V2": {
-      name: "Desenvolvimento de Sistemas/V2",
-      breakStart: "15:30",
-      breakEnd: "15:45",
-    },
-    "MA-V1": {
-      name: "Mecânica Automotiva/V1",
-      breakStart: "16:00",
-      breakEnd: "16:15",
-    },
-    TEST: { name: "Turma de Teste", breakStart: "00:00", breakEnd: "23:59" },
-  };
-
-  const classInfo = classes[student.class]; // Usa a turma do aluno logado
 
   useEffect(() => {
     const timer = setInterval(() => {
       setCurrentTime(getLocalTimeInGMT3());
     }, 1000);
 
-    // Verificar se o ticket já foi resgatado hoje
-    checkTicketStatus();
-
     return () => clearInterval(timer);
   }, []);
 
   useEffect(() => {
-    // Verificar se o ticket foi resgatado (vindo da ValidateScreen)
     if (route.params?.ticketRedeemed) {
       setTicketRedeemed(true);
     }
   }, [route.params]);
 
-  const checkTicketStatus = () => {
-    // Aqui você pode implementar a lógica para verificar se o ticket já foi resgatado hoje
-    // Por enquanto, vamos deixar como false
-    setTicketRedeemed(false);
-  };
-
   const isSchoolDay = () => {
     const day = currentTime.getDay();
-    return day >= 1 && day <= 4; // Segunda a Quinta (1-4)
+    return day >= 1 && day <= 4;
   };
 
   const isSchoolTime = () => {
@@ -78,9 +40,8 @@ export default function HomeScreen({ navigation, route }) {
     const minutes = currentTime.getMinutes();
     const currentMinutes = hours * 60 + minutes;
 
-    // Aulas das 13:45 às 17:15
-    const startTime = 13 * 60 + 45; // 13:45
-    const endTime = 17 * 60 + 15; // 17:15
+    const startTime = 13 * 60 + 45;
+    const endTime = 17 * 60 + 15;
 
     return currentMinutes >= startTime && currentMinutes <= endTime;
   };
@@ -102,16 +63,16 @@ export default function HomeScreen({ navigation, route }) {
       currentMinutes >= breakStartMinutes &&
       currentMinutes <= breakEndMinutes
     ) {
-      return "during"; // Recreio acontecendo
+      return "during";
     } else if (currentMinutes > breakEndMinutes) {
-      return "passed"; // Recreio já passou
+      return "passed";
     } else if (
       currentMinutes >= breakStartMinutes - 5 &&
       currentMinutes < breakStartMinutes
     ) {
-      return "pre"; // 5 minutos antes do recreio
+      return "pre";
     } else {
-      return "future"; // Recreio no futuro
+      return "future";
     }
   };
 
@@ -124,9 +85,7 @@ export default function HomeScreen({ navigation, route }) {
 
     const timeDiff = breakTime.getTime() - currentTime.getTime();
 
-    if (timeDiff <= 0) {
-      return null; // Recreio já passou ou está acontecendo
-    }
+    if (timeDiff <= 0) return null;
 
     const minutes = Math.floor(timeDiff / (1000 * 60));
     const seconds = Math.floor((timeDiff % (1000 * 60)) / 1000);
@@ -135,16 +94,12 @@ export default function HomeScreen({ navigation, route }) {
   };
 
   const canAccessBreak = () => {
+    if (student.id === "99999999") return true;
     const status = getBreakStatus();
     return status === "pre" || status === "during";
   };
 
   const handleAccessBreak = () => {
-    if (student.id === "99999999") {
-      navigation.navigate("ReceiveScreen", { student: student });
-      return;
-    }
-
     if (!isSchoolDay()) {
       Alert.alert(
         "Aviso",
@@ -167,27 +122,20 @@ export default function HomeScreen({ navigation, route }) {
     }
 
     const breakStatus = getBreakStatus();
-    if (breakStatus === "future") {
+    if (!canAccessBreak()) {
       Alert.alert(
         "Aviso",
-        "Você só pode acessar o sistema 5 minutos antes ou durante o recreio."
-      );
-      return;
-    }
-    if (breakStatus === "passed") {
-      Alert.alert(
-        "Aviso",
-        "O recreio já passou. Você não pode mais acessar o sistema hoje."
+        breakStatus === "future"
+          ? "Você só pode acessar o sistema 5 minutos antes ou durante o recreio."
+          : "O recreio já passou. Você não pode mais acessar o sistema hoje."
       );
       return;
     }
 
-    navigation.navigate("ReceiveScreen", { student: student });
+    navigation.navigate("ReceiveScreen", { student });
   };
 
-  const formatTime = (time) => {
-    return time < 10 ? `0${time}` : time;
-  };
+  const formatTime = (time) => (time < 10 ? `0${time}` : time);
 
   const renderTimeUntilBreak = () => {
     const status = getBreakStatus();
@@ -205,18 +153,11 @@ export default function HomeScreen({ navigation, route }) {
           O recreio está acontecendo!
         </CustomText>
       );
-    } else if (status === "pre") {
+    } else if (status === "pre" || status === "future") {
       return (
         <CustomText style={[styles.timeText, { color: colors.text }]}>
-          Tempo para o recreio: {formatTime(timeUntil.minutes)}:
-          {formatTime(timeUntil.seconds)}
-        </CustomText>
-      );
-    } else {
-      return (
-        <CustomText style={[styles.timeText, { color: colors.text }]}>
-          Tempo para o recreio: {formatTime(timeUntil.minutes)}:
-          {formatTime(timeUntil.seconds)}
+          Tempo para o recreio: {formatTime(timeUntil?.minutes || 0)}:
+          {formatTime(timeUntil?.seconds || 0)}
         </CustomText>
       );
     }
@@ -249,7 +190,6 @@ export default function HomeScreen({ navigation, route }) {
           <CustomText style={[styles.breakTime, { color: colors.accent }]}>
             {classInfo.breakStart} às {classInfo.breakEnd}
           </CustomText>
-
           {renderTimeUntilBreak()}
         </View>
 
@@ -276,7 +216,7 @@ export default function HomeScreen({ navigation, route }) {
             <CustomButton
               title={canAccessBreak() ? "Acessar Recreio" : "Aguarde o Horário"}
               onPress={handleAccessBreak}
-              disabled={!canAccessBreak() || !isSchoolDay() || !isSchoolTime()}
+              disabled={!canAccessBreak()}
             />
           </View>
         )}
@@ -298,29 +238,16 @@ export default function HomeScreen({ navigation, route }) {
 }
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-  },
-  content: {
-    flex: 1,
-    padding: 24,
-    justifyContent: "center",
-  },
-  header: {
-    alignItems: "center",
-    marginBottom: 32,
-  },
+  container: { flex: 1 },
+  content: { flex: 1, padding: 24, justifyContent: "center" },
+  header: { alignItems: "center", marginBottom: 32 },
   title: {
     fontSize: 28,
     fontWeight: "700",
     marginBottom: 8,
     textAlign: "center",
   },
-  subtitle: {
-    fontSize: 16,
-    textAlign: "center",
-    opacity: 0.8,
-  },
+  subtitle: { fontSize: 16, textAlign: "center", opacity: 0.8 },
   card: {
     padding: 24,
     borderRadius: 12,
@@ -328,20 +255,9 @@ const styles = StyleSheet.create({
     marginBottom: 24,
     alignItems: "center",
   },
-  cardTitle: {
-    fontSize: 18,
-    fontWeight: "600",
-    marginBottom: 8,
-  },
-  breakTime: {
-    fontSize: 24,
-    fontWeight: "700",
-    marginBottom: 16,
-  },
-  timeText: {
-    fontSize: 16,
-    textAlign: "center",
-  },
+  cardTitle: { fontSize: 18, fontWeight: "600", marginBottom: 8 },
+  breakTime: { fontSize: 24, fontWeight: "700", marginBottom: 16 },
+  timeText: { fontSize: 16, textAlign: "center" },
   redeemedCard: {
     padding: 24,
     borderRadius: 12,
@@ -349,24 +265,9 @@ const styles = StyleSheet.create({
     marginBottom: 24,
     alignItems: "center",
   },
-  redeemedText: {
-    fontSize: 18,
-    fontWeight: "600",
-    marginBottom: 8,
-  },
-  redeemedSubtext: {
-    fontSize: 14,
-    textAlign: "center",
-  },
-  buttonContainer: {
-    marginBottom: 24,
-  },
-  infoContainer: {
-    marginTop: 16,
-  },
-  infoText: {
-    fontSize: 14,
-    marginBottom: 4,
-    textAlign: "center",
-  },
+  redeemedText: { fontSize: 18, fontWeight: "600", marginBottom: 8 },
+  redeemedSubtext: { fontSize: 14, textAlign: "center" },
+  buttonContainer: { marginBottom: 24 },
+  infoContainer: { marginTop: 16 },
+  infoText: { fontSize: 14, marginBottom: 4, textAlign: "center" },
 });

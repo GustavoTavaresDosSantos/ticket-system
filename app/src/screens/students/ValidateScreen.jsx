@@ -1,67 +1,53 @@
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import { View, StyleSheet, Alert, Animated, Dimensions } from "react-native";
 import { useSelector } from "react-redux";
 import { LinearGradient } from "expo-linear-gradient";
 import CustomText from "../../components/CustomText";
 import CustomButton from "../../components/CustomButton";
+import { classes } from "../../utils/timeAndConstants";
 
-const { width, height } = Dimensions.get("window");
+const { width } = Dimensions.get("window");
 
 export default function ValidateScreen({ navigation, route }) {
   const themeState = useSelector((state) => state.theme);
   const currentTheme = themeState.theme;
   const colors = themeState.colors[currentTheme];
 
-  const { student } = route.params; // Recebe os dados do aluno
+  const { student } = route.params;
 
   const [ticketTorn, setTicketTorn] = useState(false);
   const [fadeAnim] = useState(new Animated.Value(1));
 
-  // Dados das turmas e horários de recreio
-  const classes = {
-    "DS-V1": {
-      name: "Desenvolvimento de Sistemas/V1",
-      breakStart: "15:00",
-      breakEnd: "15:15",
-    },
-    "DS-V2": {
-      name: "Desenvolvimento de Sistemas/V2",
-      breakStart: "15:30",
-      breakEnd: "15:45",
-    },
-    "MA-V1": {
-      name: "Mecânica Automotiva/V1",
-      breakStart: "16:00",
-      breakEnd: "16:15",
-    },
-  };
-
-  const classInfo = classes[student.class]; // Usa a turma do aluno logado
+  const classInfo = classes[student.class];
 
   const handleTearTicket = () => {
     Alert.alert(
       "Confirmar",
       "Tem certeza que deseja rasgar o ticket? Esta ação não pode ser desfeita.",
       [
-        {
-          text: "Cancelar",
-          style: "cancel",
-        },
+        { text: "Cancelar", style: "cancel" },
         {
           text: "Rasgar Ticket",
           style: "destructive",
           onPress: () => {
             setTicketTorn(true);
 
-            // Animação de fade out
             Animated.timing(fadeAnim, {
               toValue: 0,
               duration: 1000,
               useNativeDriver: true,
             }).start(() => {
-              // Após a animação, navegar de volta para HomeScreen
+              // Pequeno delay para ver a animação
               setTimeout(() => {
-                navigation.navigate("HomeScreen", { ticketRedeemed: true });
+                navigation.reset({
+                  index: 0,
+                  routes: [
+                    {
+                      name: "HomeScreen",
+                      params: { ticketRedeemed: true, student },
+                    },
+                  ],
+                });
               }, 500);
             });
           },
@@ -88,8 +74,16 @@ export default function ValidateScreen({ navigation, route }) {
           style={[styles.tornTicketContainer, { opacity: fadeAnim }]}
         >
           <View style={[styles.tornTicket, { backgroundColor: colors.danger }]}>
-            <CustomText style={[styles.tornText, { color: colors.cardBackground }]}>🎫 TICKET RASGADO</CustomText>
-            <CustomText style={[styles.tornSubtext, { color: colors.cardBackground }]}>Lanche liberado!</CustomText>
+            <CustomText
+              style={[styles.tornText, { color: colors.cardBackground }]}
+            >
+              🎫 TICKET RASGADO
+            </CustomText>
+            <CustomText
+              style={[styles.tornSubtext, { color: colors.cardBackground }]}
+            >
+              Lanche liberado!
+            </CustomText>
           </View>
         </Animated.View>
       </View>
@@ -167,14 +161,17 @@ export default function ValidateScreen({ navigation, route }) {
               </CustomText>
             </View>
 
-            {/* Efeito de perfuração nas bordas */}
             <View style={styles.perforationLeft} />
             <View style={styles.perforationRight} />
           </LinearGradient>
         </View>
 
         <View style={styles.instructionContainer}>
-          <CustomText style={[styles.instructionText, { color: colors.secondary }]}>Aguarde o atendente rasgar este ticket para liberar seu lanche</CustomText>
+          <CustomText
+            style={[styles.instructionText, { color: colors.secondary }]}
+          >
+            Aguarde o atendente rasgar este ticket para liberar seu lanche
+          </CustomText>
         </View>
 
         <View style={styles.buttonContainer}>
@@ -190,44 +187,29 @@ export default function ValidateScreen({ navigation, route }) {
 }
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-  },
+  container: { flex: 1 },
   content: {
     flex: 1,
     justifyContent: "center",
     alignItems: "center",
     padding: 24,
   },
-  header: {
-    alignItems: "center",
-    marginBottom: 32,
-  },
+  header: { alignItems: "center", marginBottom: 32 },
   title: {
     fontSize: 28,
     fontWeight: "700",
     marginBottom: 8,
     textAlign: "center",
   },
-  subtitle: {
-    fontSize: 16,
-    textAlign: "center",
-    opacity: 0.8,
-  },
-  ticketContainer: {
-    alignItems: "center",
-    marginBottom: 32,
-  },
+  subtitle: { fontSize: 16, textAlign: "center", opacity: 0.8 },
+  ticketContainer: { alignItems: "center", marginBottom: 32 },
   ticket: {
     width: width * 0.85,
     borderRadius: 16,
     padding: 24,
     position: "relative",
     shadowColor: "#000",
-    shadowOffset: {
-      width: 0,
-      height: 4,
-    },
+    shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.3,
     shadowRadius: 4.65,
     elevation: 8,
@@ -236,7 +218,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
     marginBottom: 20,
     borderBottomWidth: 2,
-    borderBottomColor: "rgba(255, 255, 255, 0.3)",
+    borderBottomColor: "rgba(255,255,255,0.3)",
     paddingBottom: 16,
   },
   ticketTitle: {
@@ -251,9 +233,7 @@ const styles = StyleSheet.create({
     opacity: 0.9,
     fontFamily: "monospace",
   },
-  ticketBody: {
-    marginBottom: 20,
-  },
+  ticketBody: { marginBottom: 20 },
   ticketRow: {
     flexDirection: "row",
     justifyContent: "space-between",
@@ -276,14 +256,10 @@ const styles = StyleSheet.create({
   ticketFooter: {
     alignItems: "center",
     borderTopWidth: 2,
-    borderTopColor: "rgba(255, 255, 255, 0.3)",
+    borderTopColor: "rgba(255,255,255,0.3)",
     paddingTop: 16,
   },
-  ticketFooterText: {
-    fontSize: 18,
-    color: "#ffffff",
-    fontWeight: "600",
-  },
+  ticketFooterText: { fontSize: 18, color: "#ffffff", fontWeight: "600" },
   perforationLeft: {
     position: "absolute",
     left: -12,
@@ -293,7 +269,7 @@ const styles = StyleSheet.create({
     borderRadius: 12,
     backgroundColor: "transparent",
     borderWidth: 2,
-    borderColor: "rgba(255, 255, 255, 0.3)",
+    borderColor: "rgba(255,255,255,0.3)",
   },
   perforationRight: {
     position: "absolute",
@@ -304,22 +280,12 @@ const styles = StyleSheet.create({
     borderRadius: 12,
     backgroundColor: "transparent",
     borderWidth: 2,
-    borderColor: "rgba(255, 255, 255, 0.3)",
+    borderColor: "rgba(255,255,255,0.3)",
   },
-  instructionContainer: {
-    marginBottom: 24,
-  },
-  instructionText: {
-    fontSize: 16,
-    textAlign: "center",
-    lineHeight: 24,
-  },
-  buttonContainer: {
-    marginTop: 16,
-  },
-  tearButton: {
-    backgroundColor: "#dc3545",
-  },
+  instructionContainer: { marginBottom: 24 },
+  instructionText: { fontSize: 16, textAlign: "center", lineHeight: 24 },
+  buttonContainer: { marginTop: 16 },
+  tearButton: { backgroundColor: "#dc3545" },
   tornTicketContainer: {
     flex: 1,
     justifyContent: "center",
@@ -331,13 +297,6 @@ const styles = StyleSheet.create({
     alignItems: "center",
     transform: [{ rotate: "-15deg" }],
   },
-  tornText: {
-    fontSize: 32,
-    fontWeight: "700",
-    marginBottom: 16,
-  },
-  tornSubtext: {
-    fontSize: 20,
-    fontWeight: "600",
-  },
+  tornText: { fontSize: 32, fontWeight: "700", marginBottom: 16 },
+  tornSubtext: { fontSize: 20, fontWeight: "600" },
 });

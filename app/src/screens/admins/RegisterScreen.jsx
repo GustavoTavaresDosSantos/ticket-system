@@ -1,37 +1,74 @@
 import React, { useState } from "react";
-import { View, StyleSheet } from "react-native";
+import { View, StyleSheet, Alert, ScrollView } from "react-native";
 import CustomInput from "../../components/CustomInput";
 import CustomButton from "../../components/CustomButton";
 import CustomText from "../../components/CustomText";
 import { useSelector } from "react-redux";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 
 export default function RegisterScreen({ navigation }) {
   const theme = useSelector((state) => state.theme.theme);
-  const isDark = theme === "dark";
+  const colors = useSelector((state) => state.theme.colors[theme]);
 
   const [name, setName] = useState("");
-  const [email, setEmail] = useState("");
+  const [id, setId] = useState("");
   const [password, setPassword] = useState("");
 
-  const handleRegister = () => {
-    console.log(`Cadastro: ${name}, ${email}`);
+  const handleRegister = async () => {
+    if (!name || !id || !password) {
+      Alert.alert("Erro", "Preencha todos os campos");
+      return;
+    }
+
+    try {
+      const usersJSON = await AsyncStorage.getItem("users");
+      const users = usersJSON ? JSON.parse(usersJSON) : [];
+
+      // Checa se matrícula já existe
+      if (users.some((user) => user.id === id)) {
+        Alert.alert("Erro", "Matrícula já cadastrada");
+        return;
+      }
+
+      // Adiciona novo aluno
+      const newUser = {
+        id,
+        password,
+        role: "student",
+        name,
+        class: "DS-V1", // Pode mudar conforme necessidade
+      };
+
+      users.push(newUser);
+      await AsyncStorage.setItem("users", JSON.stringify(users));
+
+      Alert.alert("Sucesso", "Aluno cadastrado com sucesso!");
+      setName("");
+      setId("");
+      setPassword("");
+    } catch (error) {
+      console.error(error);
+      Alert.alert("Erro", "Falha ao cadastrar o aluno");
+    }
   };
 
   return (
-    <View
-      style={[
+    <ScrollView
+      contentContainerStyle={[
         styles.container,
-        { backgroundColor: isDark ? "#121212" : "#f9f9f9" },
+        { backgroundColor: colors.body },
       ]}
     >
-      <CustomText style={styles.title}>Cadastro</CustomText>
+      <CustomText style={[styles.title, { color: colors.text }]}>
+        Cadastro de Aluno
+      </CustomText>
 
       <CustomInput placeholder="Nome" value={name} onChangeText={setName} />
       <CustomInput
-        placeholder="E-mail"
-        keyboardType="email-address"
-        value={email}
-        onChangeText={setEmail}
+        placeholder="Matrícula"
+        value={id}
+        onChangeText={setId}
+        keyboardType="number-pad"
       />
       <CustomInput
         placeholder="Senha"
@@ -40,22 +77,34 @@ export default function RegisterScreen({ navigation }) {
         onChangeText={setPassword}
       />
 
-      <CustomButton title="Cadastrar" onPress={handleRegister} />
-      <CustomButton title="Voltar" onPress={() => navigation.goBack()} />
-    </View>
+      <View style={styles.buttonContainer}>
+        <CustomButton title="Cadastrar" onPress={handleRegister} />
+      </View>
+
+      <View style={styles.buttonContainer}>
+        <CustomButton
+          title="Voltar"
+          onPress={() => navigation.goBack()}
+          variant="secondary"
+        />
+      </View>
+    </ScrollView>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
-    flex: 1,
+    flexGrow: 1,
     justifyContent: "center",
-    padding: 20,
+    padding: 24,
   },
   title: {
-    fontSize: 24,
-    fontWeight: "bold",
-    marginBottom: 20,
+    fontSize: 28,
+    fontWeight: "700",
     textAlign: "center",
+    marginBottom: 24,
+  },
+  buttonContainer: {
+    marginTop: 16,
   },
 });

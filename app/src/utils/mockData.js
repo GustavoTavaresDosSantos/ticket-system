@@ -1,6 +1,5 @@
 import AsyncStorage from "@react-native-async-storage/async-storage";
 
-// Função para criar usuários de teste
 export const createMockUsers = async () => {
   const mockUsers = [
     {
@@ -31,18 +30,11 @@ export const createMockUsers = async () => {
       name: "Administrador",
     },
     {
-      id: "testuser",
-      password: "test",
-      role: "student",
-      name: "Test User",
-      class: "TEST",
-    },
-    {
       id: "99999999",
       password: "999999",
       role: "student",
       name: "Aluno Teste",
-      class: "MA-V1",
+      class: "TESTE-V1",
     },
   ];
 
@@ -54,7 +46,6 @@ export const createMockUsers = async () => {
   }
 };
 
-// Função para verificar se os usuários já existem
 export const checkAndCreateMockUsers = async () => {
   try {
     const existingUsers = await AsyncStorage.getItem("users");

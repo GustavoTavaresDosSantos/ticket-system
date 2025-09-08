@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   View,
   StyleSheet,
@@ -13,6 +13,7 @@ import { useSelector } from "react-redux";
 import CustomInput from "../../components/CustomInput";
 import CustomButton from "../../components/CustomButton";
 import CustomText from "../../components/CustomText";
+import { checkAndCreateMockUsers } from "../../utils/mockData";
 
 const loginSchema = Yup.object().shape({
   id: Yup.string()
@@ -29,6 +30,10 @@ export default function LoginScreen({ navigation }) {
 
   const [isLoading, setIsLoading] = useState(false);
 
+  useEffect(() => {
+    checkAndCreateMockUsers();
+  }, []);
+
   const handleLogin = async (values) => {
     setIsLoading(true);
     try {
@@ -44,7 +49,7 @@ export default function LoginScreen({ navigation }) {
 
       if (student) {
         Alert.alert("Sucesso", "Login bem-sucedido!");
-        navigation.navigate("HomeScreen", { student: student });
+        navigation.navigate("HomeScreen", { student });
       } else {
         Alert.alert("Erro", "Matrícula ou senha incorretas.");
       }

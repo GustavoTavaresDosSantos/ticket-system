@@ -6,79 +6,53 @@ import {
   KeyboardAvoidingView,
   Platform,
 } from "react-native";
+import { Formik } from "formik";
+import * as Yup from "yup";
 import CustomInput from "../../components/CustomInput";
 import CustomButton from "../../components/CustomButton";
 import CustomText from "../../components/CustomText";
 import { useSelector } from "react-redux";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 
-export default function LoginScreen({ navigation }) {
+const loginSchema = Yup.object().shape({
+  user: Yup.string().required("Usuário é obrigatório"),
+  password: Yup.string()
+    .min(6, "Senha deve ter pelo menos 6 caracteres")
+    .required("Senha obrigatória"),
+});
+
+export default function AdminLoginScreen({ navigation }) {
   const themeState = useSelector((state) => state.theme);
   const currentTheme = themeState.theme;
   const colors = themeState.colors[currentTheme];
 
-  const [formData, setFormData] = useState({
-    user: "",
-    password: "",
-  });
-  const [errors, setErrors] = useState({});
   const [isLoading, setIsLoading] = useState(false);
 
-  const validateForm = () => {
-    const newErrors = {};
-
-    if (!formData.user.trim()) {
-      newErrors.user = "Usuário é obrigatório";
-    }
-
-    if (!formData.password.trim()) {
-      newErrors.password = "Senha é obrigatória";
-    } else if (formData.password.length < 6) {
-      newErrors.password = "Senha deve ter pelo menos 6 caracteres";
-    }
-
-    setErrors(newErrors);
-    return Object.keys(newErrors).length === 0;
-  };
-
-  const handleInputChange = (field, value) => {
-    setFormData((prev) => ({
-      ...prev,
-      [field]: value,
-    }));
-
-    // Limpar erro do campo quando o usuário começar a digitar
-    if (errors[field]) {
-      setErrors((prev) => ({
-        ...prev,
-        [field]: "",
-      }));
-    }
-  };
-
-  const handleLogin = async () => {
-    if (!validateForm()) {
-      return;
-    }
-
+  const handleLogin = async (values) => {
     setIsLoading(true);
-
     try {
-      // Simular chamada de API
-      await new Promise((resolve) => setTimeout(resolve, 1000));
+      const storedUsers = await AsyncStorage.getItem("users");
+      const users = storedUsers ? JSON.parse(storedUsers) : [];
 
-      // Aqui você implementaria a lógica real de autenticação
-      console.log(`Admin logando: ${formData.user}`);
+      const adminUser = users.find(
+        (u) => u.role === "admin" && u.id === values.user
+      );
 
-      // Exemplo de validação simples (remover em produção)
-      if (formData.user === "admin" && formData.password === "123456") {
-        Alert.alert("Sucesso", "Login realizado com sucesso!");
-        // navigation.navigate("AdminDashboard");
-      } else {
-        Alert.alert("Erro", "Usuário ou senha incorretos");
+      if (!adminUser) {
+        Alert.alert("Erro", "Usuário não encontrado");
+        return;
       }
+
+      if (adminUser.password !== values.password) {
+        Alert.alert("Erro", "Senha incorreta");
+        return;
+      }
+
+      Alert.alert("Sucesso", "Login realizado com sucesso!");
+      navigation.replace("RegisterScreen");
     } catch (error) {
+      console.error("Erro ao logar admin:", error);
       Alert.alert("Erro", "Falha ao realizar login. Tente novamente.");
-      console.error("Erro no login:", error);
     } finally {
       setIsLoading(false);
     }
@@ -99,65 +73,67 @@ export default function LoginScreen({ navigation }) {
           </CustomText>
         </View>
 
-        <View style={styles.form}>
-          <CustomInput
-            label="Usuário"
-            placeholder="Digite seu usuário"
-            value={formData.user}
-            onChangeText={(value) => handleInputChange("user", value)}
-            error={errors.user}
-          />
+        <Formik
+          initialValues={{ user: "", password: "" }}
+          validationSchema={loginSchema}
+          onSubmit={handleLogin}
+        >
+          {({
+            handleChange,
+            handleBlur,
+            handleSubmit,
+            values,
+            errors,
+            touched,
+          }) => (
+            <View style={styles.form}>
+              <CustomInput
+                label="Usuário"
+                placeholder="Digite seu usuário"
+                value={values.user}
+                onChangeText={handleChange("user")}
+                onBlur={handleBlur("user")}
+                error={touched.user && errors.user ? errors.user : ""}
+              />
 
-          <CustomInput
-            label="Senha"
-            placeholder="Digite sua senha"
-            secureTextEntry
-            value={formData.password}
-            onChangeText={(value) => handleInputChange("password", value)}
-            error={errors.password}
-          />
+              <CustomInput
+                label="Senha"
+                placeholder="Digite sua senha"
+                secureTextEntry
+                value={values.password}
+                onChangeText={handleChange("password")}
+                onBlur={handleBlur("password")}
+                error={
+                  touched.password && errors.password ? errors.password : ""
+                }
+              />
 
-          <View style={styles.buttonContainer}>
-            <CustomButton
-              title={isLoading ? "Entrando..." : "Entrar"}
-              onPress={handleLogin}
-              disabled={isLoading}
-            />
-          </View>
-        </View>
+              <View style={styles.buttonContainer}>
+                <CustomButton
+                  title={isLoading ? "Entrando..." : "Entrar"}
+                  onPress={handleSubmit}
+                  disabled={isLoading}
+                />
+              </View>
+            </View>
+          )}
+        </Formik>
       </View>
     </KeyboardAvoidingView>
   );
 }
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-  },
-  content: {
-    flex: 1,
-    justifyContent: "center",
-    padding: 24,
-  },
-  header: {
-    alignItems: "center",
-    marginBottom: 32,
-  },
+  container: { flex: 1 },
+  content: { flex: 1, justifyContent: "center", padding: 24 },
+  header: { alignItems: "center", marginBottom: 32 },
   title: {
     fontSize: 28,
     fontWeight: "700",
     marginBottom: 8,
     textAlign: "center",
   },
-  subtitle: {
-    fontSize: 16,
-    textAlign: "center",
-    opacity: 0.8,
-  },
-  form: {
-    width: "100%",
-  },
-  buttonContainer: {
-    marginTop: 16,
-  },
+  subtitle: { fontSize: 16, textAlign: "center", opacity: 0.8 },
+  form: { width: "100%" },
+  buttonContainer: { marginTop: 16 },
 });

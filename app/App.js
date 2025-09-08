@@ -11,10 +11,10 @@ import { checkAndCreateMockUsers } from "./src/utils/mockData";
 import ChooseRoleScreen from "./src/screens/ChooseRoleScreen";
 import StudentLoginScreen from "./src/screens/students/LoginScreen";
 import AdminLoginScreen from "./src/screens/admins/LoginScreen";
+import RegisterScreen from "./src/screens/admins/RegisterScreen";
 import HomeScreen from "./src/screens/students/HomeScreen";
 import ReceiveScreen from "./src/screens/students/ReceiveScreen";
 import ValidateScreen from "./src/screens/students/ValidateScreen";
-
 
 const Stack = createNativeStackNavigator();
 
@@ -25,7 +25,6 @@ function AppNavigator() {
   const colors = themeState.colors[currentTheme];
 
   useEffect(() => {
-    // Criar usuários de teste na inicialização
     checkAndCreateMockUsers();
   }, []);
 
@@ -43,6 +42,8 @@ function AppNavigator() {
           },
           headerTintColor: colors.text,
           contentStyle: { backgroundColor: colors.body },
+          headerBackTitleVisible: false,
+          headerTitleStyle: { fontWeight: "700" },
           headerRight: () => (
             <TouchableOpacity
               style={{ marginRight: 15 }}
@@ -57,26 +58,42 @@ function AppNavigator() {
           ),
         }}
       >
+        {/* Tela inicial sem seta de volta */}
         <Stack.Screen
           name="ChooseRole"
           component={ChooseRoleScreen}
-          options={{ title: "Escolher Função" }}
+          options={{ title: "Escolher Função", headerBackVisible: false }}
         />
+
+        {/* Login Estudante */}
         <Stack.Screen
           name="StudentLogin"
           component={StudentLoginScreen}
           options={{ title: "Login Aluno" }}
         />
+
+        {/* Login Admin */}
         <Stack.Screen
           name="AdminLogin"
           component={AdminLoginScreen}
           options={{ title: "Login Admin" }}
         />
+
+        {/* Tela de cadastro do admin */}
+        <Stack.Screen
+          name="RegisterScreen"
+          component={RegisterScreen}
+          options={{ title: "Cadastrar Aluno" }}
+        />
+
+        {/* Home do estudante */}
         <Stack.Screen
           name="HomeScreen"
           component={HomeScreen}
           options={{ title: "Início" }}
         />
+
+        {/* Receber / validar ticket */}
         <Stack.Screen
           name="ReceiveScreen"
           component={ReceiveScreen}
@@ -87,7 +104,6 @@ function AppNavigator() {
           component={ValidateScreen}
           options={{ title: "Ticket" }}
         />
-
       </Stack.Navigator>
     </NavigationContainer>
   );
