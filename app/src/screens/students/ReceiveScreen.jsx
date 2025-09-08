@@ -13,20 +13,26 @@ import {
 
 const { width, height } = Dimensions.get("window");
 
+// Componente da tela de recebimento/validação de ticket
 export default function ReceiveScreen({ navigation, route }) {
+  // Obtém o estado do tema e as cores do Redux store
   const themeState = useSelector((state) => state.theme);
   const currentTheme = themeState.theme;
   const colors = themeState.colors[currentTheme];
 
+  // Obtém informações do aluno e da turma a partir dos parâmetros da rota
   const { student } = route.params;
   const classInfo = classes[student.class];
 
+  // Estados para gerenciar o tempo atual, localização do usuário e status da localização
   const [currentTime, setCurrentTime] = useState(new Date());
   const [location, setLocation] = useState(null);
   const [isInCorrectLocation, setIsInCorrectLocation] = useState(false);
 
+  // Referência para o componente MapView
   const mapRef = useRef(null);
 
+  // Efeito para atualizar o tempo a cada segundo e solicitar permissão de localização
   useEffect(() => {
     const timer = setInterval(() => {
       setCurrentTime(getLocalTimeInGMT3());
@@ -37,6 +43,7 @@ export default function ReceiveScreen({ navigation, route }) {
     return () => clearInterval(timer);
   }, []);
 
+  // Função para solicitar permissão de localização e obter a localização atual
   const getLocationPermission = async () => {
     try {
       let { status } = await Location.requestForegroundPermissionsAsync();
@@ -49,6 +56,7 @@ export default function ReceiveScreen({ navigation, route }) {
       setLocation(currentLocation);
       checkIfInCorrectLocation(currentLocation);
 
+      // Anima o mapa para a localização atual do usuário
       if (mapRef.current) {
         mapRef.current.animateToRegion(
           {
@@ -66,13 +74,16 @@ export default function ReceiveScreen({ navigation, route }) {
     }
   };
 
+  // Verifica se o usuário está no local correto (próximo à escola)
   const checkIfInCorrectLocation = (userLocation) => {
+    // Para o usuário de teste, sempre considera a localização correta
     if (student.class === "TEST") {
       setIsInCorrectLocation(true);
       return;
     }
     if (!userLocation) return;
 
+    // Calcula a distância entre a localização do usuário e a escola
     const distance = getDistanceFromLatLonInKm(
       userLocation.coords.latitude,
       userLocation.coords.longitude,
@@ -80,11 +91,13 @@ export default function ReceiveScreen({ navigation, route }) {
       schoolLocation.longitude
     );
 
+    // Define o status da localização com base na distância (menos de 100m)
     setIsInCorrectLocation(distance < 0.1);
   };
 
+  // Função para calcular a distância entre duas coordenadas (latitude e longitude)
   const getDistanceFromLatLonInKm = (lat1, lon1, lat2, lon2) => {
-    const R = 6371;
+    const R = 6371; // Raio da Terra em km
     const dLat = deg2rad(lat2 - lat1);
     const dLon = deg2rad(lon2 - lon1);
     const a =
@@ -97,13 +110,15 @@ export default function ReceiveScreen({ navigation, route }) {
     return R * c;
   };
 
+  // Converte graus para radianos
   const deg2rad = (deg) => deg * (Math.PI / 180);
 
+  // Calcula o tempo restante até o final do recreio (com 5 minutos extras)
   const getTimeUntilBreakEnd = () => {
     const [breakHour, breakMinute] = classInfo.breakEnd.split(":").map(Number);
     const breakEndTime = new Date(currentTime);
     breakEndTime.setHours(breakHour, breakMinute, 0, 0);
-    breakEndTime.setMinutes(breakEndTime.getMinutes() + 5);
+    breakEndTime.setMinutes(breakEndTime.getMinutes() + 5); // Adiciona 5 minutos extras
 
     const timeDiff = breakEndTime.getTime() - currentTime.getTime();
 
@@ -115,25 +130,31 @@ export default function ReceiveScreen({ navigation, route }) {
     return { minutes, seconds };
   };
 
+  // Formata o tempo para exibir com dois dígitos (ex: 05, 12)
   const formatTime = (time) => (time < 10 ? `0${time}` : time);
 
+  // Lida com a validação do ticket
   const handleValidateTicket = () => {
+    // Para o usuário de teste, navega diretamente para a tela de validação
     if (student.id === "99999999") {
       navigation.navigate("ValidateScreen", { student });
       return;
     }
 
+    // Alerta se o usuário não estiver no local correto
     if (!isInCorrectLocation) {
       Alert.alert(
         "Aviso",
-        "Você precisa estar no local correto para validar o ticket."
+        "Para validar o ticket, você precisa estar no local correto. Por favor, aproxime-se da escola."
       );
       return;
     }
 
+    // Navega para a tela de validação do ticket
     navigation.navigate("ValidateScreen", { student });
   };
 
+  // Renderiza o tempo restante para o final do recreio
   const renderTimeRemaining = () => {
     const timeUntil = getTimeUntilBreakEnd();
 
@@ -156,8 +177,10 @@ export default function ReceiveScreen({ navigation, route }) {
   return (
     <View style={[styles.container, { backgroundColor: colors.body }]}>
       <View style={styles.topSection}>
+        {/* Exibe o tempo restante para o final do recreio */}
         {renderTimeRemaining()}
 
+        {/* Cartão de status da localização */}
         <View
           style={[
             styles.locationCard,
@@ -180,6 +203,7 @@ export default function ReceiveScreen({ navigation, route }) {
           </CustomText>
         </View>
 
+        {/* Botão para validar o ticket */}
         <View style={styles.buttonContainer}>
           <CustomButton
             title="Validar Ticket"
@@ -189,6 +213,7 @@ export default function ReceiveScreen({ navigation, route }) {
         </View>
       </View>
 
+      {/* Contêiner do mapa */}
       <View style={styles.mapContainer}>
         {location ? (
           <MapView
@@ -203,6 +228,7 @@ export default function ReceiveScreen({ navigation, route }) {
             showsUserLocation={true}
             showsMyLocationButton={true}
           >
+            {/* Marcador da escola no mapa */}
             <Marker
               coordinate={schoolLocation}
               title="Escola"
@@ -210,9 +236,10 @@ export default function ReceiveScreen({ navigation, route }) {
               pinColor={colors.accent}
             />
 
+            {/* Círculo indicando a área de validação da escola */}
             <Circle
               center={schoolLocation}
-              radius={10}
+              radius={10} // Raio de 10 metros
               strokeColor={
                 isInCorrectLocation ? "rgba(0,200,0,0.7)" : "rgba(200,0,0,0.7)"
               }
@@ -235,6 +262,7 @@ export default function ReceiveScreen({ navigation, route }) {
   );
 }
 
+// Estilos para o componente ReceiveScreen
 const styles = StyleSheet.create({
   container: {
     flex: 1,
@@ -287,3 +315,5 @@ const styles = StyleSheet.create({
     fontSize: 16,
   },
 });
+
+

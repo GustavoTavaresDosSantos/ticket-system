@@ -1,10 +1,11 @@
 import { createSlice } from "@reduxjs/toolkit";
 
+// Cria um slice para gerenciar o tema da aplicação (claro/escuro)
 const themeSlice = createSlice({
-  name: "theme",
+  name: "theme", // Nome do slice
   initialState: {
-    theme: "light",
-    colors: {
+    theme: "light", // Tema inicial: 'light' (claro) ou 'dark' (escuro)
+    colors: { // Definição das cores para cada tema
       light: {
         header: "#ffffff",
         body: "#f8f9fa",
@@ -40,14 +41,20 @@ const themeSlice = createSlice({
     },
   },
   reducers: {
+    // Reducer para alternar entre os temas claro e escuro
     toggleTheme: (state) => {
       state.theme = state.theme === "light" ? "dark" : "light";
     },
+    // Reducer para definir um tema específico
     setTheme: (state, action) => {
       state.theme = action.payload;
     },
   },
 });
 
+// Exporta as ações geradas pelo slice
 export const { toggleTheme, setTheme } = themeSlice.actions;
+// Exporta o reducer do slice
 export default themeSlice.reducer;
+
+

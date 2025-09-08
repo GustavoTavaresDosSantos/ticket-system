@@ -8,18 +8,24 @@ import { classes } from "../../utils/timeAndConstants";
 
 const { width } = Dimensions.get("window");
 
+// Componente da tela de validação do ticket
 export default function ValidateScreen({ navigation, route }) {
+  // Obtém o estado do tema e as cores do Redux store
   const themeState = useSelector((state) => state.theme);
   const currentTheme = themeState.theme;
   const colors = themeState.colors[currentTheme];
 
+  // Obtém informações do aluno a partir dos parâmetros da rota
   const { student } = route.params;
 
+  // Estados para controlar se o ticket foi rasgado e a animação de fade
   const [ticketTorn, setTicketTorn] = useState(false);
   const [fadeAnim] = useState(new Animated.Value(1));
 
+  // Obtém informações da turma do aluno
   const classInfo = classes[student.class];
 
+  // Função para lidar com o ato de rasgar o ticket
   const handleTearTicket = () => {
     Alert.alert(
       "Confirmar",
@@ -32,13 +38,15 @@ export default function ValidateScreen({ navigation, route }) {
           onPress: () => {
             setTicketTorn(true);
 
+            // Animação para fazer o ticket desaparecer
             Animated.timing(fadeAnim, {
               toValue: 0,
               duration: 1000,
               useNativeDriver: true,
             }).start(() => {
-              // Pequeno delay para ver a animação
+              // Pequeno delay para ver a animação antes de navegar
               setTimeout(() => {
+                // Redefine a navegação para a HomeScreen, marcando o ticket como resgatado
                 navigation.reset({
                   index: 0,
                   routes: [
@@ -56,6 +64,7 @@ export default function ValidateScreen({ navigation, route }) {
     );
   };
 
+  // Função para gerar um número de ticket único
   const generateTicketNumber = () => {
     const date = new Date();
     const dateStr = date.toISOString().slice(0, 10).replace(/-/g, "");
@@ -65,8 +74,10 @@ export default function ValidateScreen({ navigation, route }) {
     return `TK${dateStr}${randomNum}`;
   };
 
+  // Gera o número do ticket ao carregar o componente
   const ticketNumber = generateTicketNumber();
 
+  // Renderiza a tela de ticket rasgado se o ticketTorn for verdadeiro
   if (ticketTorn) {
     return (
       <View style={[styles.container, { backgroundColor: colors.body }]}>
@@ -94,15 +105,19 @@ export default function ValidateScreen({ navigation, route }) {
     <View style={[styles.container, { backgroundColor: colors.body }]}>
       <View style={styles.content}>
         <View style={styles.header}>
+          {/* Título da tela */}
           <CustomText style={[styles.title, { color: colors.text }]}>
             Ticket de Lanche
           </CustomText>
+          {/* Subtítulo da tela */}
           <CustomText style={[styles.subtitle, { color: colors.secondary }]}>
             Apresente este ticket ao atendente
           </CustomText>
         </View>
 
+        {/* Contêiner do ticket */}
         <View style={styles.ticketContainer}>
+          {/* Gradiente de fundo do ticket */}
           <LinearGradient
             colors={
               currentTheme === "light"
@@ -111,6 +126,7 @@ export default function ValidateScreen({ navigation, route }) {
             }
             style={styles.ticket}
           >
+            {/* Cabeçalho do ticket */}
             <View style={styles.ticketHeader}>
               <CustomText style={styles.ticketTitle}>
                 🎫 TICKET VÁLIDO
@@ -120,6 +136,7 @@ export default function ValidateScreen({ navigation, route }) {
               </CustomText>
             </View>
 
+            {/* Corpo do ticket com informações do aluno */}
             <View style={styles.ticketBody}>
               <View style={styles.ticketRow}>
                 <CustomText style={styles.ticketLabel}>Aluno:</CustomText>
@@ -155,17 +172,20 @@ export default function ValidateScreen({ navigation, route }) {
               </View>
             </View>
 
+            {/* Rodapé do ticket */}
             <View style={styles.ticketFooter}>
               <CustomText style={styles.ticketFooterText}>
                 ✓ Válido para um lanche
               </CustomText>
             </View>
 
+            {/* Efeitos visuais de perfuração do ticket */}
             <View style={styles.perforationLeft} />
             <View style={styles.perforationRight} />
           </LinearGradient>
         </View>
 
+        {/* Instruções para o atendente */}
         <View style={styles.instructionContainer}>
           <CustomText
             style={[styles.instructionText, { color: colors.secondary }]}
@@ -174,6 +194,7 @@ export default function ValidateScreen({ navigation, route }) {
           </CustomText>
         </View>
 
+        {/* Botão para rasgar o ticket (apenas para o atendente) */}
         <View style={styles.buttonContainer}>
           <CustomButton
             title="🗂️ Rasgar Ticket (Atendente)"
@@ -186,6 +207,7 @@ export default function ValidateScreen({ navigation, route }) {
   );
 }
 
+// Estilos para o componente ValidateScreen
 const styles = StyleSheet.create({
   container: { flex: 1 },
   content: {
@@ -300,3 +322,5 @@ const styles = StyleSheet.create({
   tornText: { fontSize: 32, fontWeight: "700", marginBottom: 16 },
   tornSubtext: { fontSize: 20, fontWeight: "600" },
 });
+
+
