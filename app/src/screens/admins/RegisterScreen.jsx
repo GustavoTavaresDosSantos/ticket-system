@@ -7,13 +7,12 @@ import {
   Alert,
   Text,
   ScrollView,
-  TouchableOpacity, // Para criar o botão de abrir o seletor
-  Modal, // O componente para a seleção da turma
-  Pressable, // Para fechar o modal ao tocar fora
+  TouchableOpacity,
+  Modal,
+  Pressable,
 } from "react-native";
 import { Formik } from "formik";
 import * as Yup from "yup";
-// O Picker não é mais necessário aqui
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useSelector } from "react-redux";
 
@@ -22,7 +21,6 @@ import CustomButton from "../../components/CustomButton";
 import CustomText from "../../components/CustomText";
 import { classes } from "../../utils/timeAndConstants";
 
-// Schema de validação
 const registerSchema = Yup.object().shape({
   name: Yup.string().required("Nome é obrigatório"),
   id: Yup.string()
@@ -38,10 +36,9 @@ export default function RegisterScreen({ navigation }) {
   const currentColors = colors[theme];
 
   const [isLoading, setIsLoading] = useState(false);
-  const [isModalVisible, setModalVisible] = useState(false); // Estado para controlar o modal
+  const [isModalVisible, setModalVisible] = useState(false);
 
   const handleRegister = async (values) => {
-    // ... (lógica de registro permanece a mesma)
     setIsLoading(true);
     try {
       const storedUsers = await AsyncStorage.getItem("users");
@@ -89,7 +86,6 @@ export default function RegisterScreen({ navigation }) {
             setFieldValue,
           }) => (
             <View>
-              {/* --- Inputs de Nome e Matrícula (sem alteração) --- */}
               <CustomInput
                 label="Nome"
                 placeholder="Digite seu nome completo"
@@ -97,6 +93,10 @@ export default function RegisterScreen({ navigation }) {
                 onChangeText={handleChange("name")}
                 onBlur={handleBlur("name")}
                 error={touched.name && errors.name}
+                backgroundColor={currentColors.inputBackground}
+                textColor={currentColors.text}
+                placeholderTextColor={currentColors.placeholderText}
+                borderColor={currentColors.border}
               />
               <CustomInput
                 label="Matrícula"
@@ -107,32 +107,46 @@ export default function RegisterScreen({ navigation }) {
                 onChangeText={handleChange("id")}
                 onBlur={handleBlur("id")}
                 error={touched.id && errors.id}
+                backgroundColor={currentColors.inputBackground}
+                textColor={currentColors.text}
+                placeholderTextColor={currentColors.placeholderText}
+                borderColor={currentColors.border}
               />
 
-              {/* --- NOVO SELETOR DE TURMA --- */}
-              <CustomText style={styles.inputLabel}>Turma</CustomText>
+              <CustomText
+                style={[styles.inputLabel, { color: currentColors.text }]}
+              >
+                Turma
+              </CustomText>
               <TouchableOpacity
-                style={styles.pickerButton}
+                style={[
+                  styles.pickerButton,
+                  {
+                    backgroundColor: currentColors.inputBackground,
+                    borderColor: currentColors.border,
+                  },
+                ]}
                 onPress={() => setModalVisible(true)}
               >
                 <CustomText
                   style={
                     values.class
-                      ? styles.pickerButtonText
-                      : styles.pickerPlaceholder
+                      ? [styles.pickerButtonText, { color: currentColors.text }]
+                      : [
+                          styles.pickerPlaceholder,
+                          { color: currentColors.placeholderText },
+                        ]
                   }
                 >
                   {values.class
                     ? classes[values.class].name
                     : "Selecione sua turma"}
                 </CustomText>
-                {/* Pode adicionar um ícone de seta aqui se quiser */}
               </TouchableOpacity>
               {touched.class && errors.class && (
                 <Text style={styles.errorText}>{errors.class}</Text>
               )}
 
-              {/* --- Input de Senha (sem alteração) --- */}
               <CustomInput
                 label="Senha"
                 placeholder="Crie sua senha"
@@ -141,6 +155,10 @@ export default function RegisterScreen({ navigation }) {
                 onChangeText={handleChange("password")}
                 onBlur={handleBlur("password")}
                 error={touched.password && errors.password}
+                backgroundColor={currentColors.inputBackground}
+                textColor={currentColors.text}
+                placeholderTextColor={currentColors.placeholderText}
+                borderColor={currentColors.border}
               />
 
               <View style={styles.buttonContainer}>
@@ -148,10 +166,11 @@ export default function RegisterScreen({ navigation }) {
                   title={isLoading ? "Cadastrando..." : "Cadastrar"}
                   onPress={handleSubmit}
                   disabled={isLoading}
+                  backgroundColor={currentColors.accent}
+                  textColor={currentColors.cardBackground}
                 />
               </View>
 
-              {/* --- MODAL DE SELEÇÃO DE TURMA --- */}
               <Modal
                 transparent={true}
                 visible={isModalVisible}
@@ -159,23 +178,38 @@ export default function RegisterScreen({ navigation }) {
                 onRequestClose={() => setModalVisible(false)}
               >
                 <Pressable
-                  style={styles.modalBackdrop}
+                  style={[styles.modalBackdrop]}
                   onPress={() => setModalVisible(false)}
                 >
-                  <View style={styles.modalContent}>
-                    <CustomText style={styles.modalTitle}>
+                  <View
+                    style={[
+                      styles.modalContent,
+                      { backgroundColor: currentColors.cardBackground },
+                    ]}
+                  >
+                    <CustomText
+                      style={[styles.modalTitle, { color: currentColors.text }]}
+                    >
                       Selecione a Turma
                     </CustomText>
                     {Object.keys(classes).map((key) => (
                       <TouchableOpacity
                         key={key}
-                        style={styles.modalOption}
+                        style={[
+                          styles.modalOption,
+                          { borderBottomColor: currentColors.border },
+                        ]}
                         onPress={() => {
                           setFieldValue("class", key);
                           setModalVisible(false);
                         }}
                       >
-                        <CustomText style={styles.modalOptionText}>
+                        <CustomText
+                          style={[
+                            styles.modalOptionText,
+                            { color: currentColors.text },
+                          ]}
+                        >
                           {classes[key].name}
                         </CustomText>
                       </TouchableOpacity>
@@ -200,44 +234,28 @@ const styles = StyleSheet.create({
     textAlign: "center",
     marginBottom: 32,
   },
-  inputLabel: {
-    fontSize: 16,
-    fontWeight: "600",
-    marginBottom: 8,
-    color: "#333",
-  },
+  inputLabel: { fontSize: 16, fontWeight: "600", marginBottom: 8 },
   errorText: { color: "red", fontSize: 12, marginTop: 4, marginBottom: 10 },
   buttonContainer: { marginTop: 24 },
 
-  // --- Estilos do novo seletor ---
   pickerButton: {
     borderWidth: 1,
-    borderColor: "#ccc",
     borderRadius: 8,
-    backgroundColor: "#fff",
     height: 50,
     justifyContent: "center",
     paddingHorizontal: 12,
     marginBottom: 15,
   },
-  pickerButtonText: {
-    fontSize: 16,
-    color: "#000",
-  },
-  pickerPlaceholder: {
-    fontSize: 16,
-    color: "#999",
-  },
+  pickerButtonText: { fontSize: 16 },
+  pickerPlaceholder: { fontSize: 16 },
 
-  // --- Estilos do Modal ---
   modalBackdrop: {
     flex: 1,
-    backgroundColor: "rgba(0, 0, 0, 0.5)",
     justifyContent: "center",
     alignItems: "center",
+    backgroundColor: "rgba(0,0,0,0.5)",
   },
   modalContent: {
-    backgroundColor: "white",
     borderRadius: 12,
     padding: 20,
     width: "80%",
@@ -249,13 +267,6 @@ const styles = StyleSheet.create({
     marginBottom: 20,
     textAlign: "center",
   },
-  modalOption: {
-    paddingVertical: 15,
-    borderBottomWidth: 1,
-    borderBottomColor: "#eee",
-  },
-  modalOptionText: {
-    fontSize: 18,
-    textAlign: "center",
-  },
+  modalOption: { paddingVertical: 15, borderBottomWidth: 1 },
+  modalOptionText: { fontSize: 18, textAlign: "center" },
 });

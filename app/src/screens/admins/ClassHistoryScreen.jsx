@@ -1,14 +1,18 @@
-import React, { useEffect, useState } from "react";
+import React, { useState } from "react";
 import { View, Text, FlatList, StyleSheet } from "react-native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { classes } from "../../utils/timeAndConstants";
 import { useFocusEffect } from "@react-navigation/native";
+import { useSelector } from "react-redux";
 
 export default function ClassHistoryScreen({ route }) {
   const { classId } = route.params;
   const [students, setStudents] = useState([]);
 
-  // Pega os alunos do AsyncStorage filtrando pela turma
+  const themeState = useSelector((state) => state.theme);
+  const currentTheme = themeState.theme;
+  const colors = themeState.colors[currentTheme];
+
   const loadStudents = async () => {
     try {
       const usersData = await AsyncStorage.getItem("users");
@@ -17,7 +21,6 @@ export default function ClassHistoryScreen({ route }) {
         (user) => user.role === "student" && user.class === classId
       );
 
-      // Verifica se cada aluno já pegou o ticket hoje
       const today = new Date().toISOString().split("T")[0];
       const studentsWithTicket = await Promise.all(
         classStudents.map(async (student) => {
@@ -26,7 +29,7 @@ export default function ClassHistoryScreen({ route }) {
           );
           return {
             ...student,
-            ticketTaken: ticketDate === today, // true se pegou hoje
+            ticketTaken: ticketDate === today,
           };
         })
       );
@@ -44,20 +47,28 @@ export default function ClassHistoryScreen({ route }) {
   );
 
   const renderItem = ({ item }) => (
-    <View style={styles.card}>
-      <Text style={styles.name}>{item.name}</Text>
-      <Text style={styles.id}>Matrícula: {item.id}</Text>
-      {/* Aqui futuramente você pode adicionar colunas de tickets */}
-      <Text style={styles.ticket}>
+    <View
+      style={[
+        styles.card,
+        { backgroundColor: colors.cardBackground, borderColor: colors.border },
+      ]}
+    >
+      <Text style={[styles.name, { color: colors.text }]}>{item.name}</Text>
+      <Text style={[styles.id, { color: colors.secondary }]}>
+        Matrícula: {item.id}
+      </Text>
+      <Text style={[styles.ticket, { color: colors.secondary }]}>
         Ticket: {item.ticketTaken ? "✅ Pegou hoje" : "—"}
       </Text>
     </View>
   );
 
   return (
-    <View style={styles.container}>
-      <Text style={styles.title}>{classes[classId]?.name || classId}</Text>
-      <Text style={styles.subTitle}>
+    <View style={[styles.container, { backgroundColor: colors.body }]}>
+      <Text style={[styles.title, { color: colors.text }]}>
+        {classes[classId]?.name || classId}
+      </Text>
+      <Text style={[styles.subTitle, { color: colors.secondary }]}>
         Intervalo: {classes[classId]?.breakStart} - {classes[classId]?.breakEnd}
       </Text>
       <FlatList
@@ -65,7 +76,7 @@ export default function ClassHistoryScreen({ route }) {
         keyExtractor={(item) => item.id}
         renderItem={renderItem}
         ListEmptyComponent={
-          <Text style={{ marginTop: 20, color: "#555" }}>
+          <Text style={{ marginTop: 20, color: colors.secondary }}>
             Nenhum aluno cadastrado nesta turma.
           </Text>
         }
@@ -75,19 +86,11 @@ export default function ClassHistoryScreen({ route }) {
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, padding: 20, backgroundColor: "#fff" },
+  container: { flex: 1, padding: 20 },
   title: { fontSize: 20, fontWeight: "bold", marginBottom: 15 },
-  row: {
-    flexDirection: "row",
-    borderBottomWidth: 1,
-    borderColor: "#ddd",
-    paddingVertical: 8,
-  },
-  headerRow: {
-    backgroundColor: "#f1f1f1",
-    borderBottomWidth: 2,
-  },
-  cell: { flex: 1, fontSize: 14, textAlign: "center" },
-  headerCell: { fontWeight: "bold" },
-  empty: { textAlign: "center", marginTop: 20, fontSize: 16, color: "#777" },
+  card: { padding: 15, marginBottom: 10, borderRadius: 10, borderWidth: 1 },
+  name: { fontSize: 16, fontWeight: "600" },
+  id: { fontSize: 14, marginTop: 5 },
+  ticket: { fontSize: 14, marginTop: 5 },
+  subTitle: { fontSize: 14, marginBottom: 15 },
 });
