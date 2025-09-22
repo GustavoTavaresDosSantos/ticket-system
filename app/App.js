@@ -16,6 +16,9 @@ import RegisterScreen from "./src/screens/admins/RegisterScreen";
 import HomeScreen from "./src/screens/students/HomeScreen";
 import ReceiveScreen from "./src/screens/students/ReceiveScreen";
 import ValidateScreen from "./src/screens/students/ValidateScreen";
+import HistoryScreen from "./src/screens/admins/HistoryScreen";
+import AdminTabs from "./src/navigation/AdminTabs";
+import ClassHistoryScreen from "./src/screens/admins/ClassHistoryScreen";
 
 const Stack = createNativeStackNavigator();
 
@@ -48,7 +51,8 @@ function AppNavigator() {
           contentStyle: { backgroundColor: colors.body }, // Estilo do conteúdo da tela
           headerBackTitleVisible: false, // Oculta o título do botão de voltar
           headerTitleStyle: { fontWeight: "700" }, // Estilo do título do cabeçalho
-          headerRight: () => ( // Botão de alternar tema no cabeçalho
+          headerRight: () => (
+            // Botão de alternar tema no cabeçalho
             <TouchableOpacity
               style={{ marginRight: 15 }}
               onPress={() => dispatch(toggleTheme())}
@@ -83,12 +87,12 @@ function AppNavigator() {
           options={{ title: "Acesso do Administrador" }}
         />
 
-        {/* Tela de Cadastro de Aluno (acessível pelo Admin) */}
         <Stack.Screen
-          name="RegisterScreen"
-          component={RegisterScreen}
-          options={{ title: "Cadastro de Aluno" }}
+          name="AdminTabs"
+          component={AdminTabs}
+          options={{ headerShown: false }}
         />
+        <Stack.Screen name="ClassHistory" component={ClassHistoryScreen} />
 
         {/* Tela Inicial do Aluno */}
         <Stack.Screen
@@ -122,5 +126,3 @@ export default function App() {
     </Provider>
   );
 }
-
-

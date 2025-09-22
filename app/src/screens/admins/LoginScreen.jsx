@@ -58,8 +58,9 @@ export default function AdminLoginScreen({ navigation }) {
       }
 
       // Login bem-sucedido, navega para a tela de registro de alunos
+      // Login bem-sucedido
       Alert.alert("Sucesso", "Login realizado com sucesso!");
-      navigation.replace("RegisterScreen");
+      navigation.replace("AdminTabs");
     } catch (error) {
       console.error("Erro ao logar admin:", error);
       Alert.alert("Erro", "Falha ao realizar login. Tente novamente.");
