@@ -15,7 +15,6 @@ import CustomButton from "../../components/CustomButton";
 import CustomText from "../../components/CustomText";
 import { checkAndCreateMockUsers } from "../../utils/mockData";
 
-// Esquema de validação para o formulário de login usando Yup
 const loginSchema = Yup.object().shape({
   id: Yup.string()
     .length(8, "A matrícula deve ter exatamente 8 dígitos")
@@ -24,30 +23,23 @@ const loginSchema = Yup.object().shape({
   password: Yup.string().required("Senha obrigatória"),
 });
 
-// Componente da tela de login do aluno
 export default function LoginScreen({ navigation }) {
-  // Obtém o estado do tema e as cores do Redux store
   const themeState = useSelector((state) => state.theme);
   const currentTheme = themeState.theme;
   const colors = themeState.colors[currentTheme];
 
-  // Estado para controlar o carregamento do login
   const [isLoading, setIsLoading] = useState(false);
 
-  // Efeito para verificar e criar usuários mock quando o componente é montado
   useEffect(() => {
     checkAndCreateMockUsers();
   }, []);
 
-  // Função para lidar com o processo de login
   const handleLogin = async (values) => {
     setIsLoading(true);
     try {
-      // Busca usuários armazenados localmente
       const storedUsers = await AsyncStorage.getItem("users");
       const users = storedUsers ? JSON.parse(storedUsers) : [];
 
-      // Encontra o aluno correspondente com base na matrícula, senha e função
       const student = users.find(
         (u) =>
           u.id === values.id &&
@@ -55,7 +47,6 @@ export default function LoginScreen({ navigation }) {
           u.role === "student"
       );
 
-      // Verifica se o aluno foi encontrado e realiza o login ou exibe erro
       if (student) {
         Alert.alert("Sucesso", "Login bem-sucedido!");
         navigation.navigate("HomeScreen", { student });
@@ -77,17 +68,14 @@ export default function LoginScreen({ navigation }) {
     >
       <View style={styles.content}>
         <View style={styles.header}>
-          {/* Título da tela de login */}
           <CustomText style={[styles.title, { color: colors.text }]}>
             Bem-vindo, Aluno!
           </CustomText>
-          {/* Subtítulo da tela de login */}
           <CustomText style={[styles.subtitle, { color: colors.secondary }]}>
             Entre com sua matrícula e senha para acessar seus tickets.
           </CustomText>
         </View>
 
-        {/* Formulário de login usando Formik para validação */}
         <Formik
           initialValues={{ id: "", password: "" }}
           validationSchema={loginSchema}
@@ -102,7 +90,6 @@ export default function LoginScreen({ navigation }) {
             touched,
           }) => (
             <View style={styles.form}>
-              {/* Campo de input para a matrícula */}
               <CustomInput
                 label="Matrícula"
                 placeholder="Digite sua matrícula"
@@ -113,7 +100,6 @@ export default function LoginScreen({ navigation }) {
                 error={touched.id && errors.id ? errors.id : ""}
               />
 
-              {/* Campo de input para a senha */}
               <CustomInput
                 label="Senha"
                 placeholder="Digite sua senha"
@@ -126,7 +112,6 @@ export default function LoginScreen({ navigation }) {
                 }
               />
 
-              {/* Botão de login */}
               <View style={styles.buttonContainer}>
                 <CustomButton
                   title={isLoading ? "Entrando..." : "Entrar"}
@@ -142,7 +127,6 @@ export default function LoginScreen({ navigation }) {
   );
 }
 
-// Estilos para o componente LoginScreen
 const styles = StyleSheet.create({
   container: {
     flex: 1,

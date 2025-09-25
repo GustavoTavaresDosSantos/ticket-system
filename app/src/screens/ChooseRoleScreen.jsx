@@ -4,19 +4,15 @@ import CustomButton from "../components/CustomButton";
 import CustomText from "../components/CustomText";
 import { useSelector } from "react-redux";
 
-// Componente da tela de escolha de perfil (Aluno/Administrador)
 export default function ChooseRoleScreen({ navigation }) {
-  // Obtém o estado do tema e as cores do Redux store
   const themeState = useSelector((state) => state.theme);
   const currentTheme = themeState.theme;
   const colors = themeState.colors[currentTheme];
 
-  // Função para navegar para a tela de login do aluno
   const handleStudentLogin = () => {
     navigation.navigate("StudentLogin");
   };
 
-  // Função para navegar para a tela de login do administrador
   const handleAdminLogin = () => {
     navigation.navigate("AdminLogin");
   };
@@ -25,18 +21,15 @@ export default function ChooseRoleScreen({ navigation }) {
     <SafeAreaView style={[styles.container, { backgroundColor: colors.body }]}>
       <View style={styles.content}>
         <View style={styles.header}>
-          {/* Título principal da tela */}
           <CustomText style={[styles.title, { color: colors.text }]}>
             Bem-vindo ao Sistema de Tickets
           </CustomText>
-          {/* Subtítulo da tela */}
           <CustomText style={[styles.subtitle, { color: colors.secondary }]}>
             Escolha seu perfil para continuar
           </CustomText>
         </View>
 
         <View style={styles.buttonContainer}>
-          {/* Cartão para o perfil de Estudante */}
           <View style={styles.roleCard}>
             <CustomText style={[styles.roleTitle, { color: colors.text }]}>
               Estudante
@@ -53,7 +46,6 @@ export default function ChooseRoleScreen({ navigation }) {
             />
           </View>
 
-          {/* Cartão para o perfil de Administrador */}
           <View style={styles.roleCard}>
             <CustomText style={[styles.roleTitle, { color: colors.text }]}>
               Administrador
@@ -75,7 +67,6 @@ export default function ChooseRoleScreen({ navigation }) {
   );
 }
 
-// Estilos para o componente ChooseRoleScreen
 const styles = StyleSheet.create({
   container: {
     flex: 1,
@@ -123,5 +114,3 @@ const styles = StyleSheet.create({
     lineHeight: 20,
   },
 });
-
-

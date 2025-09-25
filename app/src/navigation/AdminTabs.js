@@ -4,7 +4,7 @@ import { useSelector } from "react-redux";
 import { Feather } from "@expo/vector-icons";
 
 import RegisterScreen from "../screens/admins/RegisterScreen";
-import HistoryScreen from "../screens/admins/HistoryScreen"; // crie se ainda não existir
+import HistoryScreen from "../screens/admins/HistoryScreen";
 
 const Tab = createBottomTabNavigator();
 

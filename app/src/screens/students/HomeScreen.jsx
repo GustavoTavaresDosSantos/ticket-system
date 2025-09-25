@@ -17,7 +17,6 @@ export default function HomeScreen({ navigation, route }) {
   const [currentTime, setCurrentTime] = useState(getLocalTimeInGMT3());
   const [ticketRedeemed, setTicketRedeemed] = useState(false);
 
-  // Atualiza relógio
   useEffect(() => {
     const timer = setInterval(() => {
       setCurrentTime(getLocalTimeInGMT3());
@@ -25,7 +24,6 @@ export default function HomeScreen({ navigation, route }) {
     return () => clearInterval(timer);
   }, []);
 
-  // Checa no AsyncStorage se já pegou ticket hoje
   useEffect(() => {
     const checkTicketStatus = async () => {
       const today = new Date().toISOString().split("T")[0];
