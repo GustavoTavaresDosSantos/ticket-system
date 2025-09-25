@@ -10,7 +10,7 @@ import { useNavigation } from "@react-navigation/native";
 import { classes } from "../../utils/timeAndConstants";
 import { useSelector } from "react-redux";
 
-export default function HistoryScreen() {
+export default function ClassListScreen() {
   const navigation = useNavigation();
   const { theme, colors } = useSelector((state) => state.theme);
   const currentColors = colors[theme];

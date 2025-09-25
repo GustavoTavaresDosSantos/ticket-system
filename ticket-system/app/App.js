@@ -8,6 +8,7 @@ import { createNativeStackNavigator } from "@react-navigation/native-stack";
 import { Feather } from "@expo/vector-icons";
 import { checkAndCreateMockUsers } from "./src/utils/mockData";
 
+// Importa as telas da aplicação
 import ChooseRoleScreen from "./src/screens/ChooseRoleScreen";
 import StudentLoginScreen from "./src/screens/students/LoginScreen";
 import AdminLoginScreen from "./src/screens/admins/LoginScreen";
@@ -15,18 +16,21 @@ import RegisterScreen from "./src/screens/admins/RegisterScreen";
 import HomeScreen from "./src/screens/students/HomeScreen";
 import ReceiveScreen from "./src/screens/students/ReceiveScreen";
 import ValidateScreen from "./src/screens/students/ValidateScreen";
-import HistoryScreen from "./src/screens/admins/HistoryScreen";
+import ClassListScreen from "./src/screens/admins/ClassListScreen"; // Renomeado de HistoryScreen
 import AdminTabs from "./src/navigation/AdminTabs";
 import ClassHistoryScreen from "./src/screens/admins/ClassHistoryScreen";
+import ForgotPasswordScreen from "./src/screens/students/ForgotPasswordScreen";
 
 const Stack = createNativeStackNavigator();
 
+// Componente principal de navegação da aplicação
 function AppNavigator() {
   const dispatch = useDispatch();
   const themeState = useSelector((state) => state.theme);
   const currentTheme = themeState.theme;
   const colors = themeState.colors[currentTheme];
 
+  // Efeito para verificar e criar usuários mock quando o componente é montado
   useEffect(() => {
     checkAndCreateMockUsers();
   }, []);
@@ -35,6 +39,7 @@ function AppNavigator() {
     <NavigationContainer>
       <Stack.Navigator
         screenOptions={{
+          // Estilos do cabeçalho padrão para todas as telas
           headerStyle: {
             backgroundColor: colors.header,
             shadowColor: colors.text,
@@ -47,6 +52,7 @@ function AppNavigator() {
           contentStyle: { backgroundColor: colors.body },
           headerBackTitleVisible: false,
           headerTitleStyle: { fontWeight: "700" },
+          // Botão de alternar tema no cabeçalho
           headerRight: () => (
             <TouchableOpacity
               style={{ marginRight: 15 }}
@@ -61,6 +67,7 @@ function AppNavigator() {
           ),
         }}
       >
+        {/* Telas da aplicação */}
         <Stack.Screen
           name="ChooseRole"
           component={ChooseRoleScreen}
@@ -79,13 +86,83 @@ function AppNavigator() {
           options={{ title: "Acesso do Administrador" }}
         />
 
+        {/* AdminTabs contém as telas de Register e ClassList para administradores */}
         <Stack.Screen
           name="AdminTabs"
           component={AdminTabs}
-          options={{ headerShown: false }}
+          options={{ headerShown: false }} // Oculta o header padrão, pois AdminTabs tem seu próprio header
         />
-        <Stack.Screen name="ClassHistory" component={ClassHistoryScreen} />
+        {/* Tela de histórico de uma turma específica */}
+        <Stack.Screen
+          name="ClassHistory"
+          component={ClassHistoryScreen}
+          options={({ navigation }) => ({
+            title: "Histórico da Turma",
+            headerLeft: () => (
+              <TouchableOpacity
+                onPress={() => navigation.goBack()}
+                style={{ marginLeft: 15, padding: 5 }}
+              >
+                <Feather name="arrow-left" size={24} color={colors.text} />
+              </TouchableOpacity>
+            ),
+            headerRight: () => (
+              <TouchableOpacity
+                style={{ marginRight: 15 }}
+                onPress={() => dispatch(toggleTheme())}
+              >
+                <Feather
+                  name={currentTheme === "light" ? "moon" : "sun"}
+                  size={24}
+                  color={colors.text}
+                />
+              </TouchableOpacity>
+            ),
+          })}
+        />
+        {/* Tela de recuperação de senha do aluno */}
+        <Stack.Screen
+          name="ForgotPassword"
+          component={ForgotPasswordScreen}
+          options={{ title: "Recuperar Senha" }}
+        />
 
+        {/* Tela de cadastro de aluno (acessível pelo Admin) */}
+        <Stack.Screen
+          name="RegisterScreen"
+          component={RegisterScreen}
+          options={({ navigation }) => ({
+            title: "Cadastro de Aluno",
+            headerLeft: () => (
+              <TouchableOpacity
+                onPress={() => navigation.goBack()} // volta para a tela anterior
+                style={{ marginLeft: 15, padding: 5 }} // mais afastado e área de toque maior
+              >
+                <Feather name="arrow-left" size={24} color={colors.text} />
+              </TouchableOpacity>
+            ),
+            headerRight: () => (
+              <TouchableOpacity
+                style={{ marginRight: 15 }}
+                onPress={() => dispatch(toggleTheme())}
+              >
+                <Feather
+                  name={currentTheme === "light" ? "moon" : "sun"}
+                  size={24}
+                  color={colors.text}
+                />
+              </TouchableOpacity>
+            ),
+          })}
+        />
+        {/* Tela de listagem de turmas (acessível pelo Admin) */}
+        <Stack.Screen
+          name="ClassListScreen"
+          component={ClassListScreen}
+          options={{ title: "Turmas" }}
+        />
+
+        {/* Telas do fluxo do aluno */}
         <Stack.Screen
           name="HomeScreen"
           component={HomeScreen}
@@ -107,6 +184,7 @@ function AppNavigator() {
   );
 }
 
+// Componente raiz da aplicação que provê o Redux store
 export default function App() {
   return (
     <Provider store={store}>

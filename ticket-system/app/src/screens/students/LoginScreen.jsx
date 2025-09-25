@@ -5,6 +5,7 @@ import {
   KeyboardAvoidingView,
   Platform,
   Alert,
+  TouchableOpacity,
 } from "react-native";
 import { Formik } from "formik";
 import * as Yup from "yup";
@@ -15,6 +16,7 @@ import CustomButton from "../../components/CustomButton";
 import CustomText from "../../components/CustomText";
 import { checkAndCreateMockUsers } from "../../utils/mockData";
 
+// Esquema de validação para o formulário de login
 const loginSchema = Yup.object().shape({
   id: Yup.string()
     .length(8, "A matrícula deve ter exatamente 8 dígitos")
@@ -23,23 +25,27 @@ const loginSchema = Yup.object().shape({
   password: Yup.string().required("Senha obrigatória"),
 });
 
-export default function LoginScreen({ navigation }) {
+// Componente da tela de Login do Aluno
+export default function StudentLoginScreen({ navigation }) {
   const themeState = useSelector((state) => state.theme);
   const currentTheme = themeState.theme;
   const colors = themeState.colors[currentTheme];
 
   const [isLoading, setIsLoading] = useState(false);
 
+  // Efeito para garantir que os usuários mock estejam criados ao carregar a tela
   useEffect(() => {
     checkAndCreateMockUsers();
   }, []);
 
+  // Função para lidar com o processo de login
   const handleLogin = async (values) => {
     setIsLoading(true);
     try {
       const storedUsers = await AsyncStorage.getItem("users");
       const users = storedUsers ? JSON.parse(storedUsers) : [];
 
+      // Procura por um aluno com a matrícula e senha fornecidas
       const student = users.find(
         (u) =>
           u.id === values.id &&
@@ -118,6 +124,15 @@ export default function LoginScreen({ navigation }) {
                   onPress={handleSubmit}
                   disabled={isLoading}
                 />
+                {/* Botão para navegar para a tela de recuperação de senha */}
+                <TouchableOpacity
+                  onPress={() => navigation.navigate("ForgotPassword")}
+                  style={styles.forgotPasswordButton}
+                >
+                  <CustomText style={[styles.forgotPasswordText, { color: colors.primary }]}>
+                    Esqueceu a senha?
+                  </CustomText>
+                </TouchableOpacity>
               </View>
             </View>
           )}
@@ -127,6 +142,7 @@ export default function LoginScreen({ navigation }) {
   );
 }
 
+// Estilos da tela de Login do Aluno
 const styles = StyleSheet.create({
   container: {
     flex: 1,
@@ -157,4 +173,13 @@ const styles = StyleSheet.create({
   buttonContainer: {
     marginTop: 16,
   },
+  forgotPasswordButton: {
+    marginTop: 10,
+    alignSelf: "center",
+  },
+  forgotPasswordText: {
+    fontSize: 14,
+    fontWeight: "600",
+  },
 });
+
